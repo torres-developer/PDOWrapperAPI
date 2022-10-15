@@ -181,14 +181,17 @@ class PDO extends Core\Singleton implements DataManipulationInterface
 
         if ($conditions) {
             $statement .= " WHERE ";
-            $statement .= is_array($conditions)
-                ? implode(" AND", $conditions)
-                : $conditions;
+
+            $where = [];
+            $conditionsKeys = array_keys($conditions);
+            foreach ($conditionsKeys as $condition)
+                $where[] = " `$condition` = ?";
+            $statement .= implode(" AND", $where);
         }
 
         $statement .= ";";
 
-        return $this->query($statement);
+        return $this->query($statement, array_values($conditions));
     }
 
     private function createPDOStatement(string $statement): PDOStatement
