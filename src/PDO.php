@@ -202,5 +202,10 @@ class PDO extends Core\Singleton implements DataManipulationInterface
 
         return $statement;
     }
+
+    public function getError(): array
+    {
+        return $this->pdo->errorInfo();
+    }
 }
 
