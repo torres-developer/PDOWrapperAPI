@@ -6,6 +6,8 @@
 
 namespace TorresDeveloper\PdoWrapperAPI;
 
+use PDOStatement;
+
 class PDO extends Core\Singleton implements DataManipulationInterface
 {
     private \PDO $pdo;
@@ -31,9 +33,9 @@ class PDO extends Core\Singleton implements DataManipulationInterface
     }
 
     private function query(
-        \PDOStatement | string $statement,
+        PDOStatement | string $statement,
         ?array $values = null,
-    ): \PDOStatement {
+    ): PDOStatement {
         if (is_string($statement))
             $statement = $this->createPDOStatement($statement);
 
@@ -54,7 +56,7 @@ class PDO extends Core\Singleton implements DataManipulationInterface
     public function select(
         string|array $columns,
         ?string $table = null
-    ): \PDOStatement {
+    ): PDOStatement {
         $statement = "SELECT";
 
         if (!isset($table) && is_string($columns)) {
@@ -83,7 +85,7 @@ class PDO extends Core\Singleton implements DataManipulationInterface
         string $table,
         array $columns,
         array ...$values
-    ): \PDOStatement {
+    ): PDOStatement {
         $statement = "INSERT INTO `$table`";
 
         $columnsAmount = count($columns);
@@ -125,14 +127,6 @@ class PDO extends Core\Singleton implements DataManipulationInterface
                 for ($j = 0; $j < $valuesAmount; ++$j) {
                     $value = $values[$j];
 
-                    echo 
-                        $j * $columnsAmount + $i + 1,
-                        "\t",
-                        $value[$column] ?? \PDO::ATTR_DEFAULT_STR_PARAM,
-                        "\t",
-                        $columns[$column],
-                        PHP_EOL;
-
                     $statement->bindValue(
                         $j * $columnsAmount + $i + 1,
                         $value[$column] ?? 0,
@@ -142,25 +136,62 @@ class PDO extends Core\Singleton implements DataManipulationInterface
             }
         }
 
-        var_dump($statement);
-
         return $this->query($statement);
     }
 
     public function update(
         string $table,
         array $columnValue,
+        array $columns,
         ?array $conditions
-    ) {
-        
+    ): PDOStatement {
+        $statement = "UPDATE `$table` SET ";
+
+        $columnKeys = array_keys($columnValue);
+
+        $set = [];
+        foreach ($columnKeys as $column) $set[] = "`$column` = :$column";
+        $statement .= implode(", ", $set);
+
+        if ($conditions) {
+            $statement .= " WHERE ";
+
+            $where = [];
+            foreach ($conditions as $field => $value)
+                $where[] = " `$field` = $value";
+            $statement .= implode(" AND", $where);
+        }
+
+        $statement .= ";";
+
+        $statement = $this->createPDOStatement($statement);
+
+        foreach ($columnValue as $column => $value) $statement->bindValue(
+            ":$column",
+            $value ?? \PDO::ATTR_DEFAULT_STR_PARAM,
+            $columns[$column] ?? null
+        );
+
+        return $this->query($statement);
     }
 
-    public function delete(string $table, ?array $conditions)
+    public function delete(string $table, ?array $conditions): PDOStatement
     {
-        
+        $statement = "DELETE FROM `$table`";
+
+        if ($conditions) {
+            $statement .= " WHERE ";
+            $statement .= is_array($conditions)
+                ? implode(" AND", $conditions)
+                : $conditions;
+        }
+
+        $statement .= ";";
+
+        return $this->query($statement);
     }
 
-    private function createPDOStatement(string $statement): \PDOStatement
+    private function createPDOStatement(string $statement): PDOStatement
     {
         $statement = $this->pdo->prepare($statement);
 
