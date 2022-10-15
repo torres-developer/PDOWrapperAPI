@@ -1,0 +1,104 @@
+<?php
+
+/**
+ *
+ */
+
+namespace TorresDeveloper\PdoWrapperAPI;
+
+class PDO extends Core\Singleton implements DataManipulationInterface
+{
+    private \PDO $pdo;
+
+    protected function __construct(
+        string $host,
+        string $name,
+        string $charset,
+        string $username,
+        string $password
+    ) {
+        $dsn = "mysql:"
+            . "host=$host;"
+            . "dbname=$name;";
+
+        $dsn .= $charset ? "charset=$charset" : "";
+
+        $this->pdo = new \PDO($dsn, $username, $password, [
+            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
+        ]);
+    }
+
+    private function query(
+        \PDOStatement | string $statement,
+        ?array $values = null
+    ): \PDOStatement {
+        if (is_string($statement))
+            $statement = $this->createPDOStatement($statement);
+
+        if (!$statement->execute($values)) {
+            $this->pdo->inTransaction() AND $this->pdo->rollBack();
+
+            $error = $statement->errorInfo();
+
+            throw new \Error((string) $error);
+        }
+
+        return $statement;
+    }
+
+    public function select(
+        string|array $columns,
+        ?string $table = null
+    ): \PDOStatement {
+        $statement = "SELECT";
+
+        if (!isset($table) && is_string($columns)) {
+            $statement .= " *";
+
+            $table = $columns;
+        } else {
+            if (is_string($columns)) {
+                $statement .= " $columns";
+            } else {
+                $columnsNumber = count($columns);
+                for ($i = 0; $i < $columnsNumber; ++$i) {
+                    if ($i) $statement .= ",";
+
+                    $statement .= " {$columns[$i]}";
+                }
+            }
+        }
+
+        $statement .=  " FROM $table;";
+
+        return $this->query($statement);
+    }
+
+    public function insert(string $table, array $columns, array ...$values)
+    {
+        
+    }
+
+    public function update(
+        string $table,
+        array $columnValue,
+        ?array $conditions
+    ) {
+        
+    }
+
+    public function delete(string $table, ?array $conditions)
+    {
+        
+    }
+
+    private function createPDOStatement(string $statement): \PDOStatement
+    {
+        $statement = $this->pdo->prepare($statement);
+
+        if (!$statement) throw new \Error();
+
+        return $statement;
+    }
+}
+
