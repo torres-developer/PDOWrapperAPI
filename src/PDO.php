@@ -10,6 +10,8 @@ class PDO extends Core\Singleton implements DataManipulationInterface
 {
     private \PDO $pdo;
 
+    public $lastID;
+
     protected function __construct(
         string $host,
         string $name,
@@ -43,6 +45,8 @@ class PDO extends Core\Singleton implements DataManipulationInterface
 
             throw new \Error((string) $error);
         }
+
+        $this->lastID = $this->pdo->lastInsertId();
 
         return $statement;
     }
