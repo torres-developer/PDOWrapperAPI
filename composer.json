@@ -1,23 +1,49 @@
 {
+    "$schema": "https://getcomposer.org/schema.json",
     "name": "torres-developer/pdo",
     "description": "PDO wraper API",
+    "version": "1.0.0",
     "type": "library",
+    "keywords": [
+	    "database",
+	    "PDO",
+	    "wrapper",
+	    "mysql"
+    ],
+    "homepage": "https://github.com/torres-developer/PDOWrapperAPI",
+    "readme": "./README.md",
+    "time": "2022-10-16",
+    "license": "AGPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "torres-developer",
+            "email": "torres.dev@disroot.org",
+	    "homepage": "https://github.com/torres-developer",
+	    "role": "Developer"
+        }
+    ],
+    "support": {
+	"issues": "https://github.com/torres-developer/PDOWrapperAPI/issues",
+	"source": "https://github.com/torres-developer/PDOWrapperAPI/"
+    },
+    "require": {
+	"php": ">=8.1.11",
+	"ext-pdo": "*"
+    },
     "require-dev": {
         "pds/skeleton": "^1.0"
     },
-    "license": "AGPL-3.0-or-later",
     "autoload": {
         "psr-4": {
             "TorresDeveloper\\PdoWrapperAPI\\": "src/",
             "TorresDeveloper\\PdoWrapperAPI\\Core\\": "src/core"
         }
     },
-    "authors": [
-        {
-            "name": "torres-developer",
-            "email": "torres.dev@disroot.org"
-        }
-    ],
-    "minimum-stability": "alpha",
-    "require": {}
+    "minimum-stability": "dev",
+    "repositories": [
+	{
+	    "type": "vcs",
+	    "url": "https://github.com/torres-developer/PDOWrapperAPI"
+	}
+    ]
 }
