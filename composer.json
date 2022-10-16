@@ -2,7 +2,6 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "torres-developer/pdo",
     "description": "PDO wraper API",
-    "version": "1.0.0",
     "type": "library",
     "keywords": [
 	    "database",

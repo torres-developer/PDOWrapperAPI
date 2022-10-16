@@ -4,23 +4,24 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7f128705db6c30731a8aaf9e6a6fa554",
+    "content-hash": "eb686fd8e611b093901d8c8b7d3cc9e6",
     "packages": [],
     "packages-dev": [
         {
             "name": "pds/skeleton",
-            "version": "1.0.0",
+            "version": "1.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-pds/skeleton.git",
-                "reference": "95e476e5d629eadacbd721c5a9553e537514a231"
+                "reference": "75afe0c74131620b18239174bc67d6229bea273a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-pds/skeleton/zipball/95e476e5d629eadacbd721c5a9553e537514a231",
-                "reference": "95e476e5d629eadacbd721c5a9553e537514a231",
+                "url": "https://api.github.com/repos/php-pds/skeleton/zipball/75afe0c74131620b18239174bc67d6229bea273a",
+                "reference": "75afe0c74131620b18239174bc67d6229bea273a",
                 "shasum": ""
             },
+            "default-branch": true,
             "bin": [
                 "bin/pds-skeleton"
             ],
@@ -40,15 +41,18 @@
                 "issues": "https://github.com/php-pds/skeleton/issues",
                 "source": "https://github.com/php-pds/skeleton/tree/1.x"
             },
-            "time": "2017-01-25T23:30:41+00:00"
+            "time": "2017-09-11T21:05:23+00:00"
         }
     ],
     "aliases": [],
-    "minimum-stability": "alpha",
+    "minimum-stability": "dev",
     "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "php": ">=8.1.11",
+        "ext-pdo": "*"
+    },
     "platform-dev": [],
     "plugin-api-version": "2.3.0"
 }
