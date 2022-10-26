@@ -29,57 +29,25 @@
 
 namespace TorresDeveloper\PdoWrapperAPI;
 
-use PDOStatement;
-
-class PDO extends Core\Singleton implements DataManipulationInterface
+class MySQLPDO extends Core\PDOSingleton
 {
-    private \PDO $pdo;
-
     public $lastID;
 
-    protected function __construct(
-        string $host,
-        string $name,
-        string $charset,
-        string $username,
-        string $password
-    ) {
-        $dsn = "mysql:"
-            . "host=$host;"
-            . "dbname=$name;";
-
-        $dsn .= $charset ? "charset=$charset" : "";
-
-        $this->pdo = new \PDO($dsn, $username, $password, [
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
-        ]);
-    }
-
-    private function query(
-        PDOStatement | string $statement,
-        ?array $values = null,
-    ): PDOStatement {
-        if (is_string($statement))
-            $statement = $this->createPDOStatement($statement);
-
-
-        if (!$statement->execute($values)) {
-            $this->pdo->inTransaction() AND $this->pdo->rollBack();
-
-            $error = $statement->errorInfo();
-
-            throw new \Error((string) $error);
-        }
-
-        $this->lastID = $this->pdo->lastInsertId();
-
-        return $statement;
+    protected function genDsn(Core\PDODataSourceName $dsn): string
+    {
+        return "mysql:"
+            . ($dsn->socket
+                ? "unix_socket=$dsn->socket;"
+                : ("host=$dsn->host;"
+                    . $dsn->port ? "port=$dsn->port;" : ""))
+            . "dbname=$dsn->database;"
+            . "charset=utf8mb4";
     }
 
     public function select(
         string|array $columns,
         ?string $table = null
-    ): PDOStatement {
+    ): \PDOStatement {
         $statement = "SELECT";
 
         if (!isset($table) && is_string($columns)) {
@@ -108,7 +76,7 @@ class PDO extends Core\Singleton implements DataManipulationInterface
         string $table,
         array $columns,
         array ...$values
-    ): PDOStatement {
+    ): \PDOStatement {
         $statement = "INSERT INTO `$table`";
 
         $columnsAmount = count($columns);
@@ -167,7 +135,7 @@ class PDO extends Core\Singleton implements DataManipulationInterface
         array $columnValue,
         array $columns,
         ?array $conditions
-    ): PDOStatement {
+    ): \PDOStatement {
         $statement = "UPDATE `$table` SET ";
 
         $columnKeys = array_keys($columnValue);
@@ -198,7 +166,7 @@ class PDO extends Core\Singleton implements DataManipulationInterface
         return $this->query($statement);
     }
 
-    public function delete(string $table, ?array $conditions): PDOStatement
+    public function delete(string $table, ?array $conditions): \PDOStatement
     {
         $statement = "DELETE FROM `$table`";
 
@@ -215,20 +183,6 @@ class PDO extends Core\Singleton implements DataManipulationInterface
         $statement .= ";";
 
         return $this->query($statement, array_values($conditions));
-    }
-
-    private function createPDOStatement(string $statement): PDOStatement
-    {
-        $statement = $this->pdo->prepare($statement);
-
-        if (!$statement) throw new \Error();
-
-        return $statement;
-    }
-
-    public function getError(): array
-    {
-        return $this->pdo->errorInfo();
     }
 }
 

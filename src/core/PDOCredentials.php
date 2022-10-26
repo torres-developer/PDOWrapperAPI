@@ -27,30 +27,14 @@
  * @version 1.0.0
  */
 
-namespace TorresDeveloper\PdoWrapperAPI;
+namespace TorresDeveloper\PdoWrapperAPI\Core;
 
-use PDOStatement;
-
-interface DataManipulationInterface
+final class PDOCredentials
 {
-    public function select(
-        string | array $columns,
-        string $table
-    ): PDOStatement;
-    public function insert(
-        string $table,
-        array $columns,
-        array ...$values
-    ): PDOStatement;
-    public function update(
-        string $table,
-        array $columnValue,
-        array $columns,
-        ?array $conditions
-    ): PDOStatement;
-    public function delete(
-        string $table,
-        ?array $conditions
-    ): PDOStatement;
+    public function __construct(
+        public ?string $name = null,
+        public ?string $password = null
+    ) {
+    }
 }
 

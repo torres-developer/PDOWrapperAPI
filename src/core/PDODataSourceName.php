@@ -27,38 +27,24 @@
  * @version 1.0.0
  */
 
-/**
- * Singleton 
- *
- * @see https://refactoring.guru/design-patterns/singleton/php/example Singleton
- */
 namespace TorresDeveloper\PdoWrapperAPI\Core;
 
-abstract class Singleton
+final class PDODataSourceName
 {
-    private static $instances = [];
-
-    protected function __construct()
-    {
+    public function __construct(
+        public ?string $host,
+        public ?int $port,
+        public string $database,
+        public ?string $socket,
+        public ?PDOCredentials $credentials
+    ) {
+        if ($socket && ($host || $port))
+            throw new \Error("Shouldn't be used with host or port");
     }
 
-    final protected function __clone()
+    public function __toString(): string
     {
-    }
-
-    final public function __wakeup()
-    {
-        throw new \Exception("Cannot unserialize a singleton.");
-    }
-
-    final public static function getInstance(): Singleton
-    {
-        $class = static::class;
-
-        if (!isset(self::$instances[$class]))
-            self::$instances[$class] = new static(...func_get_args());
-
-        return self::$instances[$class];
+        return json_encode($this);
     }
 }
 
