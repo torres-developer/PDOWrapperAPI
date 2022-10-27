@@ -1,23 +1,23 @@
 <?php
 
 /**
- *    PDOWrapperAPI - An Wrapper API for the PHP PDO.
- *    Copyright (C) 2022  João Torres
+ *        PDOWrapperAPI - An Wrapper API for the PHP PDO.
+ *        Copyright (C) 2022  João Torres
  *
- *    This program is free software: you can redistribute it and/or modify
- *    it under the terms of the GNU Affero General Public License as published by
- *    the Free Software Foundation, either version 3 of the License, or
- *    (at your option) any later version.
+ *        This program is free software: you can redistribute it and/or modify
+ *        it under the terms of the GNU Affero General Public License as
+ *        published by the Free Software Foundation, either version 3 of the
+ *        License, or (at your option) any later version.
  *
- *    This program is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU Affero General Public License for more details.
+ *        This program is distributed in the hope that it will be useful,
+ *        but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *        GNU Affero General Public License for more details.
  *
- *    You should have received a copy of the GNU Affero General Public License
- *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *        You should have received a copy of the GNU Affero General Public License
+ *        along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- * @package TorresDeveloper\\PdoWrapperAPI
+ * @package TorresDeveloper\\PdoWrapperAPI\\Core
  * @author João Torres <torres.dev@disroot.org>
  * @copyright Copyright (C) 2022  João Torres
  * @license https://www.gnu.org/licenses/agpl-3.0.txt GNU Affero General Public License
@@ -37,9 +37,11 @@ namespace TorresDeveloper\PdoWrapperAPI\Core;
 
 abstract class PDOSingleton implements DataManipulationInterface
 {
+    use CheckArray;
+
     protected \PDO $pdo;
 
-    public $lastID;
+    public string | false $lastID;
 
     private static $instances = [];
 
@@ -48,8 +50,8 @@ abstract class PDOSingleton implements DataManipulationInterface
         try {
             $this->pdo = new \PDO(
                 $this->genDsn($dsn),
-                $dsn->credentials->name,
-                $dsn->credentials->password,
+                $dsn->credentials->name ?? null,
+                $dsn->credentials->password ?? null,
                 array_merge([
                     \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
                 ], $options)
@@ -82,7 +84,7 @@ abstract class PDOSingleton implements DataManipulationInterface
     final public static function getInstance(
         PDODataSourceName $dsn,
         ?array $options = []
-    ): PDOSingleton {
+    ): static {
         $class = static::class;
 
         $dsncode = (string) $dsn;
@@ -91,6 +93,10 @@ abstract class PDOSingleton implements DataManipulationInterface
             self::$instances[$class][$dsncode] = new static($dsn, $options);
 
         return self::$instances[$class][$dsncode];
+    }
+
+    final public static function getInstancesListKeys(): array {
+        return array_keys(self::$instances[static::class] ?? []);
     }
 
     abstract protected function genDsn(PDODataSourceName $dsn): string;

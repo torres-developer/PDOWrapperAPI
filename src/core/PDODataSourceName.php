@@ -31,19 +31,20 @@ namespace TorresDeveloper\PdoWrapperAPI\Core;
 
 final class PDODataSourceName
 {
+    public array $info = [];
+    public ?PDOCredentials $credentials;
+
     public function __construct(
-        public ?string $host,
-        public ?int $port,
-        public string $database,
-        public ?string $socket,
-        public ?PDOCredentials $credentials
+        array $info,
+        ?PDOCredentials $credentials = null
     ) {
-        if ($socket && ($host || $port))
-            throw new \Error("Shouldn't be used with host or port");
+        $this->info = $info;
+        $this->credentials = $credentials;
     }
 
     public function __toString(): string
     {
+        ksort($this->info);
         return json_encode($this);
     }
 }
