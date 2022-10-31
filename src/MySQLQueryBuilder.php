@@ -71,7 +71,7 @@ class MySQLQueryBuilder extends Core\QueryBuilder
 
     public function and(string $field, int $op, mixed $val): static
     {
-        if ($this->query->type !== "WHERE")
+        if (!in_array($this->query->type, ["WHERE", "HAVING"]))
             throw new \Exception();
 
         $this->query->base .= " && `$field` " . $this->findSignal($op) . " ?";
@@ -83,7 +83,7 @@ class MySQLQueryBuilder extends Core\QueryBuilder
 
     public function or(string $field, int $op, mixed $val): static
     {
-        if ($this->query->type !== "WHERE")
+        if (!in_array($this->query->type, ["WHERE", "HAVING"]))
             throw new \Exception();
 
         $this->query->base .= " || `$field` " . $this->findSignal($op) . " ?";
@@ -95,7 +95,7 @@ class MySQLQueryBuilder extends Core\QueryBuilder
 
     public function xor(string $field, int $op, mixed $val): static
     {
-        if ($this->query->type !== "WHERE")
+        if (!in_array($this->query->type, ["WHERE", "HAVING"]))
             throw new \Exception();
 
         $this->query->base .= " XOR `$field` " . $this->findSignal($op) . " ?";
@@ -119,7 +119,12 @@ class MySQLQueryBuilder extends Core\QueryBuilder
 
     public function having(string $field, int $op, mixed $val): static
     {
-        if (!in_array($this->query->type, ["SELECT", "WHERE", "GROUP BY"]))
+        if (!in_array($this->query->type, [
+            "SELECT",
+            "WHERE",
+            "GROUP BY",
+            "GROUP BY WITH ROLLUP",
+        ]))
             throw new \Exception();
 
         $this->query->base .= " HAVING `$field` "
@@ -139,6 +144,7 @@ class MySQLQueryBuilder extends Core\QueryBuilder
             "SELECT",
             "WHERE",
             "GROUP BY",
+            "GROUP BY WITH ROLLUP",
             "HAVING"
         ]))
             throw new \Exception();
@@ -156,8 +162,10 @@ class MySQLQueryBuilder extends Core\QueryBuilder
             "SELECT",
             "WHERE",
             "GROUP BY",
+            "GROUP BY WITH ROLLUP",
             "HAVING",
-            "ORDER BY"
+            "ORDER BY",
+            "ORDER BY WITH ROLLUP",
         ]))
             throw new \Exception();
 
@@ -165,6 +173,18 @@ class MySQLQueryBuilder extends Core\QueryBuilder
             . (isset($offset) ? "$offset, $rows" : $rows);
 
         $this->query->type = "LIMIT";
+
+        return $this;
+    }
+
+    public function withRollup(): static
+    {
+        if (!in_array($this->query->type, ["GROUP BY", "ORDER BY"]))
+            throw new \Exception();
+
+        $this->query->base .= " WITH ROLLUP";
+
+        $this->query->type .= " WITH ROOLUP";
 
         return $this;
     }

@@ -72,6 +72,8 @@ abstract class QueryBuilder
     abstract public function or(string $field, int $op, mixed $val): static;
     abstract public function xor(string $field, int $op, mixed $val): static;
 
+    abstract public function withRollup(): static;
+
     //public function innerJoin(string $table): static;
 
     //public function on(array ...$conditions): static;
