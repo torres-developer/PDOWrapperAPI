@@ -71,28 +71,19 @@ class MySQLPDO extends Core\PDOSingleton
         string|array $columns,
         ?string $table = null
     ): \PDOStatement {
-        $statement = "SELECT";
+        $query = $this->getBuider();
 
         if (!isset($table) && is_string($columns)) {
-            $statement .= " *";
-
             $table = $columns;
-        } else {
-            if (is_string($columns)) {
-                $statement .= " $columns";
-            } else {
-                $columnsNumber = count($columns);
-                for ($i = 0; $i < $columnsNumber; ++$i) {
-                    if ($i) $statement .= ",";
 
-                    $statement .= " `{$columns[$i]}`";
-                }
-            }
+            $columns = "*";
+        } else {
+            if (is_string($columns)) $columns = [$columns];
         }
 
-        $statement .=  " FROM `$table`;";
+        $query = $query->select($columns)->from($table);
 
-        return $this->query($statement);
+        return $query->run();
     }
 
     public function insert(

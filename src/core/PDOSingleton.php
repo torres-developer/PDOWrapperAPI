@@ -37,7 +37,7 @@ namespace TorresDeveloper\PdoWrapperAPI\Core;
 
 abstract class PDOSingleton implements DataManipulationInterface
 {
-    use CheckArray;
+    use CheckArray, ParamTypeFinder;
 
     protected \PDO $pdo;
 
@@ -108,6 +108,12 @@ abstract class PDOSingleton implements DataManipulationInterface
         if (is_string($statement))
             $statement = $this->createPDOStatement($statement);
 
+        $valuesAmount = count($values);
+        for ($i = 1; $i <= $valuesAmount; ++$i) {
+            $value = $values[$i - 1];
+
+            $statement->bindValue($i, $value, $this->findParam($value));
+        }
 
         if (!$statement->execute($values)) {
             $this->pdo->inTransaction() AND $this->pdo->rollBack();
@@ -122,8 +128,20 @@ abstract class PDOSingleton implements DataManipulationInterface
         return $statement;
     }
 
-    protected function createPDOStatement(string $statement): \PDOStatement
+    final public function getBuider(): QueryBuilder
     {
+        return new (substr(static::class, 0, -3) . "QueryBuilder")($this);
+    }
+
+    final public function fromBuilder(QueryBuilder $query): \PDOStatement
+    {
+        return $this->query($this->createPDOStatement($query), $query->getValues());
+    }
+
+    protected function createPDOStatement(QueryBuilder | string $statement): \PDOStatement
+    {
+        if ($statement instanceof QueryBuilder) $statement = $statement->getQuery();
+
         $statement = $this->pdo->prepare($statement);
 
         if (!$statement) throw new \Error();
