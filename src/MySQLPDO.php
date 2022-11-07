@@ -29,6 +29,8 @@
 
 namespace TorresDeveloper\PdoWrapperAPI;
 
+use TorresDeveloper\PdoWrapperAPI\Core\QueryBuilder;
+
 class MySQLPDO extends Core\PDOSingleton
 {
     protected function genDsn(Core\PDODataSourceName $dsn): string
@@ -88,60 +90,14 @@ class MySQLPDO extends Core\PDOSingleton
 
     public function insert(
         string $table,
-        array $columns,
         array ...$values
     ): \PDOStatement {
-        $statement = "INSERT INTO `$table`";
+        $query = $this->getBuider();
 
-        $columnsAmount = count($columns);
-        $columnsKeys = array_keys($columns);
-
-        $placeHolder = str_repeat(
-            "?, ",
-            $columnsAmount ? ($columnsAmount - 1) : 0
-        ) . "?)";
-
-        if ($columnsAmount) {
-            $statement .= "(";
-
-            foreach ($columnsKeys as $index => $key)
-                $statement .= $index === $columnsAmount -1
-                    ? "`$key`)"
-                    : "`$key`, ";
-        }
-
-        $statement .= " VALUES";
-
-        $valuesAmount = count($values);
-        for ($i = 0; $i < $valuesAmount; ++$i) {
-            $statement .= " (" . (!empty($columns)
-                ? $placeHolder
-                : str_repeat("?, ", (count($values[$i]) - 1)) . "?)");
-
-            if (!$i == $valuesAmount) $statement .= ",";
-        }
-
-        $statement .= ";";
-
-        $statement = $this->createPDOStatement($statement);
-
-        if ($columnsAmount) {
-            for ($i = 0; $i < $columnsAmount; ++$i) {
-                $column = $columnsKeys[$i];
-                
-                for ($j = 0; $j < $valuesAmount; ++$j) {
-                    $value = $values[$j];
-
-                    $statement->bindValue(
-                        $j * $columnsAmount + $i + 1,
-                        $value[$column] ?? 0,
-                        $columns[$column]
-                    );
-                }
-            }
-        }
-
-        return $this->query($statement);
+        return $query
+            ->insert($table)
+            ->values(QueryBuilder::DEFAULT_ON_NULL, ...$values)
+            ->run();
     }
 
     public function update(

@@ -38,6 +38,10 @@ abstract class QueryBuilder
     const LT = 4;
     const NE = 5;
 
+    const THROW_ON_NULL = 0;
+    const DEFAULT_ON_NULL = 1;
+    const NULL_ON_NULL = 2;
+
     protected PDOSingleton $dbh;
 
     protected ?\stdClass $query = null;
@@ -73,6 +77,10 @@ abstract class QueryBuilder
     abstract public function xor(string $field, int $op, mixed $val): static;
 
     abstract public function withRollup(): static;
+
+    abstract public function insert(string $table): static;
+    abstract public function colNames(string ...$columns): static;
+    abstract public function values(int $type = self::THROW_ON_NULL, array ...$valueList): static;
 
     //public function innerJoin(string $table): static;
 

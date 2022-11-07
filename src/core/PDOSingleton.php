@@ -101,7 +101,8 @@ abstract class PDOSingleton implements DataManipulationInterface
 
     abstract protected function genDsn(PDODataSourceName $dsn): string;
 
-    final protected function query(
+    // PUBLIC BECAUSE OF NEED TO GET COLUMNS FROM TABLE
+    final public function query(
         \PDOStatement | string $statement,
         ?array $values = null,
     ): \PDOStatement {

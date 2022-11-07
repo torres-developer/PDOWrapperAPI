@@ -29,6 +29,8 @@
 
 namespace TorresDeveloper\PdoWrapperAPI;
 
+use Error;
+
 class MySQLQueryBuilder extends Core\QueryBuilder
 {
     public function select(string ...$fields): static
@@ -185,6 +187,86 @@ class MySQLQueryBuilder extends Core\QueryBuilder
         $this->query->base .= " WITH ROLLUP";
 
         $this->query->type .= " WITH ROOLUP";
+
+        return $this;
+    }
+
+    public function insert(string $table): static
+    {
+        if (!$this->query) $this->reset();
+
+        $this->query->base = "INSERT INTO `$table`";
+        $this->query->type = "INSERT";
+        $this->query->columns = null;
+        $this->query->table = $table;
+
+        return $this;
+    }
+
+    public function colNames(string ...$columns): static
+    {
+        if ($this->query->type !== "INSERT")
+            throw new \Exception();
+
+        if ($columns)
+            $this->query->base .= "(`" . implode("`, `", $columns) . "`)";
+
+        $this->query->type .= " INTO";
+        $this->query->columns = $columns;
+
+        return $this;
+    }
+
+    public function values(int $type = self::THROW_ON_NULL, array ...$valueLists): static
+    {
+        if (!in_array($this->query->type, ["INSERT", "INSERT INTO", "VALUES"]))
+            throw new \Exception();
+
+        if ($type < self::THROW_ON_NULL || $type > self::NULL_ON_NULL)
+            throw new \Exception();
+
+        if ($this->query->type !== "VALUES")
+            $this->query->base .= " VALUES ";
+
+        if (!$this->query->columns) {
+            $this->query->columns = array_map(
+                fn ($i) => $i->Field,
+                $this->dbh->query(
+                    "SHOW COLUMNS FROM {$this->query->table};",
+                    []
+                )->fetchAll(\PDO::FETCH_OBJ)
+            );
+        }
+
+        $inserts = [];
+        foreach ($valueLists as $list) {
+            $placeholders = [];
+
+            foreach ($this->query->columns as $column) {
+                if ($type == self::THROW_ON_NULL) {
+                    if (!isset($list[$column]))
+                        throw new Error("Cannot find value for column");
+
+                    $this->query->values[] = $list[$column];
+                } else if ($type == self::DEFAULT_ON_NULL) {
+                    if (!isset($list[$column])) {
+                        $placeholders[] = "DEFAULT";
+                    } else {
+                        $placeholders[] = "?";
+                        $this->query->values[] = $list[$column];
+                    }
+                } else if ($type == self::NULL_ON_NULL) {
+                    $placeholders[] = "?";
+                    $this->query->values[] = $list[$column] ?? null;
+                }
+            }
+
+            $inserts[] =  "(" . implode(", ", $placeholders) . ")";
+        }
+        
+        $this->query->base .= implode(", ", $inserts);
+
+        $this->query->type = "VALUES";
 
         return $this;
     }

@@ -37,7 +37,6 @@ interface DataManipulationInterface
     ): \PDOStatement;
     public function insert(
         string $table,
-        array $columns,
         array ...$values
     ): \PDOStatement;
     public function update(
