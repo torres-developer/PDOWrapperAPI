@@ -31,16 +31,16 @@ namespace TorresDeveloper\PdoWrapperAPI\Core;
 
 abstract class QueryBuilder
 {
-    const EQ = 0;
-    const GE = 1;
-    const GT = 2;
-    const LE = 3;
-    const LT = 4;
-    const NE = 5;
+    public const EQ = 0;
+    public const GE = 1;
+    public const GT = 2;
+    public const LE = 3;
+    public const LT = 4;
+    public const NE = 5;
 
-    const THROW_ON_NULL = 0;
-    const DEFAULT_ON_NULL = 1;
-    const NULL_ON_NULL = 2;
+    public const THROW_ON_NULL = 0;
+    public const DEFAULT_ON_NULL = 1;
+    public const NULL_ON_NULL = 2;
 
     protected PDOSingleton $dbh;
 
@@ -53,7 +53,7 @@ abstract class QueryBuilder
         $this->reset();
     }
 
-    protected function reset(): static
+    public function reset(): static
     {
         $this->query = new \stdClass();
 
@@ -90,9 +90,7 @@ abstract class QueryBuilder
 
     //public function is(string $field, bool $is = true): static;
 
-    //public function createPDOStatement(): \PDOStatement;
-
-    final public function run(): \PDOStatement
+    public function run(): \PDOStatement
     {
         return $this->dbh->fromBuilder($this);
     }
