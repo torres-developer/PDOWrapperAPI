@@ -8,43 +8,46 @@ An Wrapper API for the PHP PDO.
 
 require __DIR__ ."/../vendor/autoload.php";
 
-$dbh = \TorresDeveloper\PdoWrapperAPI\PDO::getInstance(
-    "192.168.1.40",
-    "exampleDatabase",
-    "utf8",
-    "user",
-    "passwd"
+$dbh = new \TorresDeveloper\PdoWrapperAPI\mysqlConnection(
+    new Core\PDODataSourceName([
+        "host" => "192.168.1.40",
+        "database" => "exampleDatabase",
+    ], new Core\PDOCredentials(
+        "user",
+        "passwd"
+    ))
 );
 
+/*
+ * Use the CRUD interface for easy operations:
+ * - select;
+ * - insert;
+ * - update;
+ * - delete.
+ */
+
 // get all from all users
-print_r($dbh->select("user")->fetchAll(PDO::FETCH_OBJ));
+$dbh->select("user")->fetchAll(PDO::FETCH_OBJ);
 // get all users `id`
-print_r($dbh->select("id", "user")->fetchAll(PDO::FETCH_OBJ));
+$dbh->select("id", "user")->fetchAll(PDO::FETCH_OBJ);
 // get all users `name` and `age`
-print_r($dbh->select(["name", "age"], "user")->fetchAll(PDO::FETCH_OBJ));
+$dbh->select(["name", "age"], "user")->fetchAll(PDO::FETCH_OBJ);
 
-// insert new user
-$dbh->insert("user", [
-    "name" => PDO::PARAM_STR,
-    "age" => PDO::PARAM_INT
-], ...[
-    ["age" => 25, "name" => "Darius"],
-    ["age" => 32, "name" => "Swain"]
-]);
+// insert new users
+$users = [
+    ["id" => 123, "name" => "asdfs"],
+    ["age => 2],
+    ["id" => null, "text" => "y7tgebh"]
+];
+$dbh->insert("user", ...$users);
 
-// update users with `name` "Swain"
-$dbh->update("user", [
-    "name" => "Garen",
-    "email" => "garen@demacia.gov"
-], [
-    "name" => PDO::PARAM_STR,
-    "email" => PDO::PARAM_STR
-], [
-    "name" => "\"Swain\"",
-]);
-
-// delete user with `id` 69
-$dbh->delete("user", ["id" => 69]);
-
+/*
+ * You can use a query builder for more complex operations:
+ */
+$dbh->getBuider()->select()
+    ->from("user")
+    ->limit(5)
+    ->run()
+    ->fetchAll(\PDO::FETCH_OBJ)
 ```
 

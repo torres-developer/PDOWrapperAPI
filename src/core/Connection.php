@@ -35,7 +35,7 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
 
     private Service $service;
 
-    public function __construct(PDODataSourceName $dsn, ?array $options = [])
+    public function __construct(DataSourceName $dsn, ?array $options = [])
     {
         $this->genDsn($dsn);
 
@@ -44,7 +44,7 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
         $this->service = Service::getInstance($dsn, $options);
     }
 
-    abstract protected function genDsn(PDODataSourceName $dsn): void;
+    abstract protected function genDsn(DataSourceName $dsn): void;
 
     public function hasService(): bool
     {

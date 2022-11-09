@@ -55,7 +55,7 @@ class Service implements ServiceInterface
         "/\/\*.*\*\//"          // /* */
     ];
 
-    final protected function __construct(PDODataSourceName $dsn, array $options)
+    final protected function __construct(DataSourceName $dsn, array $options)
     {
         try {
             $this->pdo = new \PDO(
@@ -97,7 +97,7 @@ class Service implements ServiceInterface
     }
 
     final public static function getInstance(
-        PDODataSourceName $dsn,
+        DataSourceName $dsn,
         ?array $options = []
     ): static {
         $class = static::class;
@@ -177,7 +177,7 @@ class Service implements ServiceInterface
 
             return (string) $v;
         }, $statement->queryString);
-        unset($i);
+        unset($i, $key);
 
         $valuesAmount = count($values);
         for ($i = 1; $i <= $valuesAmount; ++$i) {

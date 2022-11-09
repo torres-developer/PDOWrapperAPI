@@ -29,48 +29,12 @@
 
 namespace TorresDeveloper\PdoWrapperAPI\Core;
 
-final class PDODataSourceName
+final class Credentials
 {
-    public array $info = [];
-    public ?PDOCredentials $credentials;
-
-    private string $dsn;
-
-    private ?string $driver = null;
-
     public function __construct(
-        array $info,
-        ?PDOCredentials $credentials = null
+        public ?string $name = null,
+        public ?string $password = null
     ) {
-        $this->info = $info;
-        $this->credentials = $credentials;
-    }
-
-    public function getDsn(): string {
-        return $this->dsn;
-    }
-
-    public function setDsn(string $dsn): void {
-        $this->dsn = $dsn;
-    }
-
-    public function hasDsn(): bool {
-        return (bool) $this->dsn;
-    }
-
-    public function setDriver(string $driver): void {
-        if (in_array($driver, \PDO::getAvailableDrivers(), true))
-            $this->driver = $driver;
-    }
-
-    public function getDriver(): string {
-        return $this->driver;
-    }
-
-    public function __toString(): string
-    {
-        ksort($this->info);
-        return json_encode($this);
     }
 }
 

@@ -31,44 +31,64 @@ namespace TorresDeveloper\PdoWrapperAPI;
 
 use TorresDeveloper\PdoWrapperAPI\Core\QueryBuilder;
 
+/**
+ * @author João Torres <torres.dev@disroot.org>
+ * @link https://www.mysql.com MySQL website
+ * @link https://dev.mysql.com/doc/refman/8.0/en/ Reference Manual
+ */
 class mysqlConnection extends Core\Connection
 {
-    protected function genDsn(Core\PDODataSourceName $dsn): void
+    /**
+     * @param \TorresDeveloper\PdoWrapperAPI\Core\DataSourceName $dsn Contains the information required to connect to the database. {@link https://www.php.net/manual/en/pdo.construct.php PHP \PDO __construct documentation}
+     *
+     * @throws \RuntimeException
+     */
+    protected function genDsn(Core\DataSourceName $dsn): void
     {
         $info = $dsn->info;
 
         if (!$this->checkArray($info, "database"))
-            throw new \Error("no database specified");
+            throw new \RuntimeException("No database name specified.");
 
-        if (!$this->checkArray($info, "socket")
-            && !$this->checkArray($info, "host"))
-            throw new \Error("Neither socket or host defined");
+        if (
+            !$this->checkArray($info, "socket")
+            && !$this->checkArray($info, "host")
+        )
+            throw new \RuntimeException("Neither the MySQL Unix socket nor the "
+            . "hostname for the database server defined");
 
-        if ($this->checkArray($info, "port")
-            && !$this->checkArray($info, "host"))
-            throw new \Error("can't use port without specifying an host");
+        if (
+            $this->checkArray($info, "port")
+            && !$this->checkArray($info, "host")
+        )
+            throw new \RuntimeException("Can't specify database server port "
+            . "number without defining an hostname for the database"
+            . "server.");
 
-        if ($this->checkArray($info, "socket")
-            && (
-                $this->checkArray($info, "host")
-                    || $this->checkArray($info, "port")
+        if (
+            $this->checkArray($info, "socket")
+            && ($this->checkArray($info, "host")
+                || $this->checkArray($info, "port")
             )
         )
-            throw new \Error("socket shouldn't be used with host or port");
+            throw new \RuntimeException("The MySQL Unix socket shouldn't be "
+            . "defined at the same time as an hostname or a port number for "
+            . "the server.");
 
-        $return = "mysql:";
-        $return .= $this->checkArray($info, "socket")
-                ? ("unix_socket={$this->checkArrayValue($info, "socket")};")
-                : (("host={$this->checkArrayValue($info, "host")};")
-                    . $this->checkArray($info, "port")
-                        ? "port={$this->checkArrayValue($info, "port")};"
-                        : "");
-        $return .= "dbname={$this->checkArrayValue($info, "database")};";
-        $return .= "charset=utf8mb4";
-
-        $dsn->setDsn($return);
-
+        // TODO: should not ser driver here
         $dsn->setDriver("mysql");
+
+        $dsnStr = "mysql:";
+        $dsnStr .= $this->checkArray($info, "socket")
+            ? ("unix_socket={$this->checkArrayValue($info, "socket")};")
+            : (("host={$this->checkArrayValue($info, "host")};")
+                . $this->checkArray($info, "port")
+                ? "port={$this->checkArrayValue($info, "port")};"
+                : "");
+        $dsnStr .= "dbname={$this->checkArrayValue($info, "database")};";
+        $dsnStr .= "charset=utf8mb4";
+
+        $dsn->setDsn($dsnStr);
     }
 
     public function select(
