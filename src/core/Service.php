@@ -163,11 +163,8 @@ class Service implements ServiceInterface
             throw new \Exception();
 
         $i = 0;
-        $GLOBALS["values"] = $values;
-        $key = preg_replace_callback("/\?/", function (): string {
-            global $i;
-
-            $v = $GLOBALS["values"][$i++] ?? null;
+        $key = preg_replace_callback("/\?/", function () use ($values, $i): string {
+            $v = $values[$i++] ?? null;
 
             if (!isset($v))
                 return "NULL";
@@ -180,7 +177,7 @@ class Service implements ServiceInterface
 
             return (string) $v;
         }, $statement->queryString);
-        unset($i, $GLOBALS["values"]);
+        unset($i);
 
         $valuesAmount = count($values);
         for ($i = 1; $i <= $valuesAmount; ++$i) {
