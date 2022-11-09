@@ -71,6 +71,9 @@ class Service implements ServiceInterface
         }
 
         $this->driver = $dsn->getDriver();
+
+        if (!isset($this->driver))
+            throw new \Exception();
     }
 
     final public function __destruct()
@@ -159,7 +162,25 @@ class Service implements ServiceInterface
         if (!self::checkForSQLInjections($values ?? []))
             throw new \Exception();
 
-        var_dump($statement->queryString);
+        $i = 0;
+        $GLOBALS["values"] = $values;
+        $key = preg_replace_callback("/\?/", function (): string {
+            global $i;
+
+            $v = $GLOBALS["values"][$i++] ?? null;
+
+            if (!isset($v))
+                return "NULL";
+
+            if (is_bool($v))
+                return $v ? "TRUE" : "FALSE";
+
+            if (is_string($v))
+                return $this->pdo->quote($v);
+
+            return (string) $v;
+        }, $statement->queryString);
+        unset($i, $GLOBALS["values"]);
 
         $valuesAmount = count($values);
         for ($i = 1; $i <= $valuesAmount; ++$i) {

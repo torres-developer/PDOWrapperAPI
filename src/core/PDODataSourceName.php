@@ -36,7 +36,7 @@ final class PDODataSourceName
 
     private string $dsn;
 
-    private string $driver;
+    private ?string $driver = null;
 
     public function __construct(
         array $info,
@@ -59,7 +59,7 @@ final class PDODataSourceName
     }
 
     public function setDriver(string $driver): void {
-        if (in_array($driver, \PDO::getAvailableDrivers()))
+        if (in_array($driver, \PDO::getAvailableDrivers(), true))
             $this->driver = $driver;
     }
 
