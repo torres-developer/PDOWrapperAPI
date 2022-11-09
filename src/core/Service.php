@@ -35,21 +35,31 @@ namespace TorresDeveloper\PdoWrapperAPI\Core;
  * @see https://refactoring.guru/design-patterns/singleton/php/example Singleton
  */
 
-abstract class PDOSingleton implements DataManipulationInterface
+class Service implements ServiceInterface
 {
-    use CheckArray, ParamTypeFinder;
+    use ParamTypeFinder;
 
     protected \PDO $pdo;
 
-    public string | false $lastID;
+    protected string | false $lastID;
+
+    protected string $driver;
 
     private static $instances = [];
+
+    public const invalidPatterns = [
+        "/OR\s+1\s*=\s*1/i",    // OR 1=1
+        "/\"\s+OR\s+\"\"=\"/i", // " OR ""="
+        "/;/",                  // ;
+        "/--/",                 // --
+        "/\/\*.*\*\//"          // /* */
+    ];
 
     final protected function __construct(PDODataSourceName $dsn, array $options)
     {
         try {
             $this->pdo = new \PDO(
-                $this->genDsn($dsn),
+                $dsn->getDsn(),
                 $dsn->credentials->name ?? null,
                 $dsn->credentials->password ?? null,
                 array_merge([
@@ -59,6 +69,8 @@ abstract class PDOSingleton implements DataManipulationInterface
         } catch (\PDOException $e) {
             throw $e;
         }
+
+        $this->driver = $dsn->getDriver();
     }
 
     final public function __destruct()
@@ -99,7 +111,42 @@ abstract class PDOSingleton implements DataManipulationInterface
         return array_keys(self::$instances[static::class] ?? []);
     }
 
-    abstract protected function genDsn(PDODataSourceName $dsn): string;
+    /**
+     * \PDO interface methods
+     */
+
+    public function beginTransaction(): void
+    {
+        if (!$this->pdo->beginTransaction())
+            throw new \Exception("Cannot initiate the transaction");
+    }
+
+    public function commit(): void
+    {
+        if (!$this->pdo->commit())
+            throw new \Exception("Cannot commit the transaction");
+    }
+
+    public function getError(): array
+    {
+        return $this->pdo->errorInfo();
+    }
+
+    public function inTransaction(): bool
+    {
+        return $this->pdo->inTransaction();
+    }
+
+    public function getLastID(): string | false
+    {
+        return $this->lastID;
+    }
+
+    public function rollBack(): void
+    {
+        if (!$this->pdo->rollBack())
+            throw new \Exception("Cannot roll back the transaction");
+    }
 
     // PUBLIC BECAUSE OF NEED TO GET COLUMNS FROM TABLE
     final public function query(
@@ -108,6 +155,11 @@ abstract class PDOSingleton implements DataManipulationInterface
     ): \PDOStatement {
         if (is_string($statement))
             $statement = $this->createPDOStatement($statement);
+
+        if (!self::checkForSQLInjections($values ?? []))
+            throw new \Exception();
+
+        var_dump($statement->queryString);
 
         $valuesAmount = count($values);
         for ($i = 1; $i <= $valuesAmount; ++$i) {
@@ -131,12 +183,15 @@ abstract class PDOSingleton implements DataManipulationInterface
 
     final public function getBuider(): QueryBuilder
     {
-        return new (substr(static::class, 0, -3) . "QueryBuilder")($this);
+        return new ("TorresDeveloper\\PdoWrapperAPI\\" . $this->driver . "QueryBuilder")($this);
     }
 
-    final public function fromBuilder(QueryBuilder $query): \PDOStatement
+    public function fromBuilder(QueryBuilder $query): \PDOStatement
     {
-        return $this->query($this->createPDOStatement($query), $query->getValues());
+        return $this->query(
+            $this->createPDOStatement($query),
+            $query->getValues()
+        );
     }
 
     protected function createPDOStatement(QueryBuilder | string $statement): \PDOStatement
@@ -150,9 +205,14 @@ abstract class PDOSingleton implements DataManipulationInterface
         return $statement;
     }
 
-    public function getError(): array
+    public static function checkForSQLInjections(array $values): bool
     {
-        return $this->pdo->errorInfo();
+        foreach ($values as $v)
+            foreach (self::invalidPatterns as $regex)
+                if (preg_match($regex, $v))
+                    return false;
+
+        return true;
     }
 }
 

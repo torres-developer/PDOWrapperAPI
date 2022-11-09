@@ -17,7 +17,7 @@
  *    You should have received a copy of the GNU Affero General Public License
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- * @package TorresDeveloper\\PdoWrapperAPI
+ * @package TorresDeveloper\\PdoWrapperAPI\\Core
  * @author João Torres <torres.dev@disroot.org>
  * @copyright Copyright (C) 2022  João Torres
  * @license https://www.gnu.org/licenses/agpl-3.0.txt GNU Affero General Public License
@@ -34,12 +34,37 @@ final class PDODataSourceName
     public array $info = [];
     public ?PDOCredentials $credentials;
 
+    private string $dsn;
+
+    private string $driver;
+
     public function __construct(
         array $info,
         ?PDOCredentials $credentials = null
     ) {
         $this->info = $info;
         $this->credentials = $credentials;
+    }
+
+    public function getDsn(): string {
+        return $this->dsn;
+    }
+
+    public function setDsn(string $dsn): void {
+        $this->dsn = $dsn;
+    }
+
+    public function hasDsn(): bool {
+        return (bool) $this->dsn;
+    }
+
+    public function setDriver(string $driver): void {
+        if (in_array($driver, \PDO::getAvailableDrivers()))
+            $this->driver = $driver;
+    }
+
+    public function getDriver(): string {
+        return $this->driver;
     }
 
     public function __toString(): string

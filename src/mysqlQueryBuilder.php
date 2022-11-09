@@ -31,7 +31,7 @@ namespace TorresDeveloper\PdoWrapperAPI;
 
 use Error;
 
-class MySQLQueryBuilder extends Core\QueryBuilder
+class mysqlQueryBuilder extends Core\QueryBuilder
 {
     public function select(string ...$fields): static
     {

@@ -31,9 +31,9 @@ namespace TorresDeveloper\PdoWrapperAPI;
 
 use TorresDeveloper\PdoWrapperAPI\Core\QueryBuilder;
 
-class MySQLPDO extends Core\PDOSingleton
+class mysqlConnection extends Core\Connection
 {
-    protected function genDsn(Core\PDODataSourceName $dsn): string
+    protected function genDsn(Core\PDODataSourceName $dsn): void
     {
         $info = $dsn->info;
 
@@ -66,7 +66,9 @@ class MySQLPDO extends Core\PDOSingleton
         $return .= "dbname={$this->checkArrayValue($info, "database")};";
         $return .= "charset=utf8mb4";
 
-        return $return;
+        $dsn->setDsn($return);
+
+        $dsn->setDriver("mysql");
     }
 
     public function select(

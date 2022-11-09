@@ -42,11 +42,11 @@ abstract class QueryBuilder
     public const DEFAULT_ON_NULL = 1;
     public const NULL_ON_NULL = 2;
 
-    protected PDOSingleton $dbh;
+    protected Service $dbh;
 
     protected ?\stdClass $query = null;
 
-    public function __construct(PDOSingleton $dbh)
+    public function __construct(Service $dbh)
     {
         $this->dbh = $dbh;
 
