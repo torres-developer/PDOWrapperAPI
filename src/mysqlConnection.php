@@ -91,6 +91,16 @@ class mysqlConnection extends Core\Connection
         $dsn->setDsn($dsnStr);
     }
 
+    /**
+     * @param string|string[] $columns Array of the columns to select from the table $table.
+     *                                 In case this is a string:
+     *                                 - maybe you want just one column or;
+     *                                 - if $table it's null then $columns will be the table and all columns are selected.
+     * @param null|string     $table   Name of the table to select.
+     *                                 If it's null $columns must be the table name.
+     *
+     * @return \PDOStatement
+     */
     public function select(
         string|array $columns,
         ?string $table = null
@@ -105,11 +115,15 @@ class mysqlConnection extends Core\Connection
             if (is_string($columns)) $columns = [$columns];
         }
 
-        $query = $query->select($columns)->from($table);
-
-        return $query->run();
+        return $query->select(...$columns)->from($table)->run();
     }
 
+    /**
+     * @param string     $table  Table where you want to insert the rows $values.
+     * @param ...mixed[] $values The rows, each one an associative array column => value.
+     *
+     * @return \PDOStatement
+     */
     public function insert(
         string $table,
         array ...$values

@@ -17,7 +17,7 @@
  *    You should have received a copy of the GNU Affero General Public License
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- * @package TorresDeveloper\\PdoWrapperAPI
+ * @package TorresDeveloper\\PdoWrapperAPI\\Core
  * @author João Torres <torres.dev@disroot.org>
  * @copyright Copyright (C) 2022  João Torres
  * @license https://www.gnu.org/licenses/agpl-3.0.txt GNU Affero General Public License
@@ -31,10 +31,12 @@ namespace TorresDeveloper\PdoWrapperAPI\Core;
 
 interface DataManipulationInterface
 {
+    // XXX: Maybe we could use ...string and just say that the first string is the table
     public function select(
         string | array $columns,
         string $table
     ): \PDOStatement;
+    // XXX: $values -> $rows maybe
     public function insert(
         string $table,
         array ...$values
