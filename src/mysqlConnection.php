@@ -45,7 +45,7 @@ class mysqlConnection extends Core\Connection
      */
     protected function genDsn(Core\DataSourceName $dsn): void
     {
-        $info = $dsn->info;
+        $info = $dsn->getInfo();
 
         if (!$this->checkArray($info, "database"))
             throw new \RuntimeException("No database name specified.");

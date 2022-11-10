@@ -57,11 +57,13 @@ class Service implements ServiceInterface
 
     final protected function __construct(DataSourceName $dsn, array $options)
     {
+        $credentials = $dsn->getCredentials();
+
         try {
             $this->pdo = new \PDO(
-                $dsn->getDsn(),
-                $dsn->credentials->getName() ?? null,
-                $dsn->credentials->getPassword() ?? null,
+                $dsn->getDSNString(),
+                $credentials->getName() ?? null,
+                $credentials->getPassword() ?? null,
                 array_merge([
                     \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
                 ], $options)

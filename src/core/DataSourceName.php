@@ -29,10 +29,14 @@
 
 namespace TorresDeveloper\PdoWrapperAPI\Core;
 
+/**
+ * @author João Torres <torres.dev@disroot.org>
+ * @link https://www.php.net/manual/en/pdo.construct.php PHP \PDO __construct documentation
+ */
 final class DataSourceName
 {
-    public array $info = [];
-    public ?Credentials $credentials;
+    private array $info = [];
+    private ?Credentials $credentials;
 
     private string $dsn;
 
@@ -46,24 +50,49 @@ final class DataSourceName
         $this->credentials = $credentials;
     }
 
-    public function getDsn(): string {
+    public function getInfo(): array
+    {
+        return $this->info;
+    }
+
+    public function getCredentials(): Credentials
+    {
+        return $this->credentials;
+    }
+
+    public function getDSNString(): string
+    {
         return $this->dsn;
     }
 
-    public function setDsn(string $dsn): void {
+    public function setDsn(string $dsn): void
+    {
         $this->dsn = $dsn;
     }
 
-    public function hasDsn(): bool {
+    public function hasDsn(): bool
+    {
         return (bool) $this->dsn;
     }
 
-    public function setDriver(string $driver): void {
-        if (in_array($driver, \PDO::getAvailableDrivers(), true))
-            $this->driver = $driver;
+    public function setDriver(string $driver): void
+    {
+        if (isset($this->driver))
+            throw new \DomainException("Can't set the driver more than once. "
+                . "Driver already setted to $this->driver.");
+
+        $drivers = \PDO::getAvailableDrivers();
+
+        if (!in_array($driver, $drivers, true))
+            throw new \DomainException("Invalid driver or driver not "
+                . "supported.\nSupported drivers:\n\t- "
+                . implode(";\n\t- ", $drivers) . ".");
+
+        $this->driver = $driver;
     }
 
-    public function getDriver(): string {
+    public function getDriver(): string
+    {
         return $this->driver;
     }
 
