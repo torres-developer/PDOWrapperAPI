@@ -31,10 +31,37 @@ namespace TorresDeveloper\PdoWrapperAPI\Core;
 
 final class Credentials
 {
-    public function __construct(
-        public ?string $name = null,
-        public ?string $password = null
-    ) {
+    private ?string $name = null;
+    private ?string $password = null;
+
+    private static array $cache = [];
+    
+    private function __construct(?string $name, ?string $password) {
+        $this->name = $name;
+        $this->password = $password;
+    }
+
+    public static function getCredentials(
+        ?string $name,
+        ?string $password
+    ): static {
+        $args = func_get_args();
+        $key = json_encode(array_slice($args, 0, 2));
+
+        if (!isset(self::$cache[$key]))
+            self::$cache[$key] = new static(...$args);
+
+        return self::$cache[$key];
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->password;
     }
 }
 

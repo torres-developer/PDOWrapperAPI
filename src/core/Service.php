@@ -60,8 +60,8 @@ class Service implements ServiceInterface
         try {
             $this->pdo = new \PDO(
                 $dsn->getDsn(),
-                $dsn->credentials->name ?? null,
-                $dsn->credentials->password ?? null,
+                $dsn->credentials->getName() ?? null,
+                $dsn->credentials->getPassword() ?? null,
                 array_merge([
                     \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
                 ], $options)

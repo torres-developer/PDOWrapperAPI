@@ -12,7 +12,7 @@ $dbh = new \TorresDeveloper\PdoWrapperAPI\mysqlConnection(
     new Core\PDODataSourceName([
         "host" => "192.168.1.40",
         "database" => "exampleDatabase",
-    ], new Core\PDOCredentials(
+    ], Core\Credentials::getCredentials(
         "user",
         "passwd"
     ))
