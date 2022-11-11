@@ -29,12 +29,6 @@
 
 namespace TorresDeveloper\PdoWrapperAPI\Core;
 
-/**
- * Singleton 
- *
- * @see https://refactoring.guru/design-patterns/singleton/php/example Singleton
- */
-
 class Service implements ServiceInterface
 {
     use ParamTypeFinder;
@@ -46,14 +40,6 @@ class Service implements ServiceInterface
     protected string $driver;
 
     private static $instances = [];
-
-    public const invalidPatterns = [
-        "/OR\s+1\s*=\s*1/i",    // OR 1=1
-        "/\"\s+OR\s+\"\"=\"/i", // " OR ""="
-        "/;/",                  // ;
-        "/--/",                 // --
-        "/\/\*.*\*\//"          // /* */
-    ];
 
     final protected function __construct(DataSourceName $dsn, array $options)
     {
@@ -153,34 +139,10 @@ class Service implements ServiceInterface
             throw new \Exception("Cannot roll back the transaction");
     }
 
-    // PUBLIC BECAUSE OF NEED TO GET COLUMNS FROM TABLE
     final public function query(
         \PDOStatement | string $statement,
         ?array $values = null,
     ): \PDOStatement {
-        if (is_string($statement))
-            $statement = $this->createPDOStatement($statement);
-
-        if (!self::checkForSQLInjections($values ?? []))
-            throw new \Exception();
-
-        $i = 0;
-        $key = preg_replace_callback("/\?/", function () use ($values, $i): string {
-            $v = $values[$i++] ?? null;
-
-            if (!isset($v))
-                return "NULL";
-
-            if (is_bool($v))
-                return $v ? "TRUE" : "FALSE";
-
-            if (is_string($v))
-                return $this->pdo->quote($v);
-
-            return (string) $v;
-        }, $statement->queryString);
-        unset($i, $key);
-
         $valuesAmount = count($values);
         for ($i = 1; $i <= $valuesAmount; ++$i) {
             $value = $values[$i - 1];
@@ -201,38 +163,14 @@ class Service implements ServiceInterface
         return $statement;
     }
 
-    final public function getBuider(): QueryBuilder
-    {
-        return new ("TorresDeveloper\\PdoWrapperAPI\\" . $this->driver . "QueryBuilder")($this);
+    public function &getPDO(ServiceInterface $service): \PDO {
+        if ($service instanceof ServiceInterface)
+            return $this->pdo;
     }
 
-    public function fromBuilder(QueryBuilder $query): \PDOStatement
+    public function getDriver(): string
     {
-        return $this->query(
-            $this->createPDOStatement($query),
-            $query->getValues()
-        );
-    }
-
-    protected function createPDOStatement(QueryBuilder | string $statement): \PDOStatement
-    {
-        if ($statement instanceof QueryBuilder) $statement = $statement->getQuery();
-
-        $statement = $this->pdo->prepare($statement);
-
-        if (!$statement) throw new \Error();
-
-        return $statement;
-    }
-
-    public static function checkForSQLInjections(array $values): bool
-    {
-        foreach ($values as $v)
-            foreach (self::invalidPatterns as $regex)
-                if (preg_match($regex, $v))
-                    return false;
-
-        return true;
+        return $this->driver;
     }
 }
 

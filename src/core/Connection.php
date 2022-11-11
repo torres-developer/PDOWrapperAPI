@@ -35,6 +35,19 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
 
     private Service $service;
 
+    public const invalidPatterns = [
+        "/OR\s+1\s*=\s*1/i",    // OR 1=1
+        "/\"\s+OR\s+\"\"=\"/i", // " OR ""="
+        "/;/",                  // ;
+        "/--/",                 // --
+        "/\/\*.*\*\//"          // /* */
+    ];
+
+    /**
+     * @var \PDOStatement[] $cache
+     */
+    private array $cache = [];
+
     public function __construct(DataSourceName $dsn, ?array $options = [])
     {
         $this->genDsn($dsn);
@@ -50,6 +63,10 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
     {
         return (bool) $this->service;
     }
+
+    /**
+     * \PDO interface methods
+     */
 
     public function beginTransaction(): void
     {
@@ -81,14 +98,89 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
         $this->service->rollBack();
     }
 
+    final public function query(
+        \PDOStatement | string $statement,
+        ?array $values = null
+    ): \PDOStatement {
+        if (is_string($statement))
+            $statement = $this->createPDOStatement($statement);
+
+        $values ??= [];
+
+        if (!self::checkForSQLInjections($values))
+            throw new \Exception();
+
+        if (str_starts_with($statement->queryString, "SELECT")) {
+            $key = $this->genQuery($statement, $values);
+
+            if (!isset($this->cache[$key]))
+                $this->cache[$key] = $this->service->query($statement, $values);
+
+            return $this->cache[$key];
+        }
+
+        return $this->service->query($statement, $values);
+    }
+
     final public function getBuider(): QueryBuilder
     {
-        return $this->service->getBuider();
+        return new ("TorresDeveloper\\PdoWrapperAPI\\"
+            . $this->service->getDriver()
+            . "QueryBuilder")($this);
     }
 
     public function fromBuilder(QueryBuilder $query): \PDOStatement
     {
-        return $this->service->fromBuilder($query);
+        return $this->query(
+            $this->createPDOStatement($query),
+            $query->getValues()
+        );
+    }
+
+    public function genQuery(\PDOStatement $statement, array $values): string
+    {
+        $i = 0;
+        return preg_replace_callback(
+            "/\?/",
+            function () use ($values, $i): string {
+                $v = $values[$i++] ?? null;
+
+                if (!isset($v))
+                    return "NULL";
+
+                if (is_bool($v))
+                    return $v ? "TRUE" : "FALSE";
+
+                if (is_string($v))
+                    return $this->pdo->quote($v);
+
+                return (string) $v;
+            },
+            $statement->queryString
+        );
+    }
+
+    public static function checkForSQLInjections(array $values): bool
+    {
+        foreach ($values as $v)
+            foreach (self::invalidPatterns as $regex)
+                if (preg_match($regex, $v))
+                    return false;
+
+        return true;
+    }
+
+    protected function createPDOStatement(
+        QueryBuilder | string $statement
+    ): \PDOStatement {
+        if ($statement instanceof QueryBuilder)
+            $statement = $statement->getQuery();
+
+        $statement = $this->service->getPDO($this)->prepare($statement);
+
+        if (!$statement) throw new \Error();
+
+        return $statement;
     }
 }
 

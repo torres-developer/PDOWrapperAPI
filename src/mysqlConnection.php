@@ -110,7 +110,7 @@ class mysqlConnection extends Core\Connection
         if (!isset($table) && is_string($columns)) {
             $table = $columns;
 
-            $columns = "*";
+            $columns = ["*"];
         } else {
             if (is_string($columns)) $columns = [$columns];
         }

@@ -31,9 +31,10 @@ namespace TorresDeveloper\PdoWrapperAPI\Core;
 
 interface ServiceInterface
 {
-    public function getBuider(): QueryBuilder;
-
-    public function fromBuilder(QueryBuilder $query): \PDOStatement;
+    public function query(
+        \PDOStatement | string $statement,
+        ?array $values = null,
+    ): \PDOStatement;
 
     /**
      * \PDO interface methods
