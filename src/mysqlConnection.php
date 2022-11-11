@@ -43,7 +43,7 @@ class mysqlConnection extends Core\Connection
      *
      * @throws \RuntimeException
      */
-    protected function genDsn(Core\DataSourceName $dsn): void
+    protected function genDSN(Core\DataSourceName $dsn): string
     {
         $info = $dsn->getInfo();
 
@@ -75,9 +75,6 @@ class mysqlConnection extends Core\Connection
             . "defined at the same time as an hostname or a port number for "
             . "the server.");
 
-        // TODO: should not ser driver here
-        $dsn->setDriver("mysql");
-
         $dsnStr = "mysql:";
         $dsnStr .= $this->checkArray($info, "socket")
             ? ("unix_socket={$this->checkArrayValue($info, "socket")};")
@@ -88,7 +85,12 @@ class mysqlConnection extends Core\Connection
         $dsnStr .= "dbname={$this->checkArrayValue($info, "database")};";
         $dsnStr .= "charset=utf8mb4";
 
-        $dsn->setDsn($dsnStr);
+        return $dsnStr;
+    }
+
+    protected function genDriver(): string
+    {
+        return "mysql";
     }
 
     /**

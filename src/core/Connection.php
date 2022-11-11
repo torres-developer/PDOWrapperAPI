@@ -50,14 +50,16 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
 
     public function __construct(DataSourceName $dsn, ?array $options = [])
     {
-        $this->genDsn($dsn);
+        $dsn->setDsn($this->genDSN($dsn));
+        $dsn->setDriver($this->genDriver());
 
         if (!$dsn->hasDsn()) throw new \Exception();
 
         $this->service = Service::getInstance($dsn, $options);
     }
 
-    abstract protected function genDsn(DataSourceName $dsn): void;
+    abstract protected function genDSN(DataSourceName $dsn): string;
+    abstract protected function genDriver(): string;
 
     public function hasService(): bool
     {
