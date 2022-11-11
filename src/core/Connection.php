@@ -176,9 +176,11 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
         if ($statement instanceof QueryBuilder)
             $statement = $statement->getQuery();
 
-        $statement = $this->service->getPDO($this)->prepare($statement);
+        $pdo = $this->service->getPDO($this);
 
-        if (!$statement) throw new \Error();
+        $statement = $pdo->prepare($statement);
+
+        if (!$statement) throw new \RuntimeException($pdo->errorInfo()[2]);
 
         return $statement;
     }
