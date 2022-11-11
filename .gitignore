@@ -1,4 +1,7 @@
+composer.phar
 /vendor/
+
+.php-cs-fixer.cache
 
 # using this file for test and it has passwords
 /src/index.php

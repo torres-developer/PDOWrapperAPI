@@ -29,7 +29,7 @@
 
 namespace TorresDeveloper\PdoWrapperAPI\Core;
 
-abstract class QueryBuilder
+interface QueryBuilder
 {
     public const EQ = 0;
     public const GE = 1;
@@ -42,45 +42,30 @@ abstract class QueryBuilder
     public const DEFAULT_ON_NULL = 1;
     public const NULL_ON_NULL = 2;
 
-    protected Connection $dbh;
+    public function select(string ...$fields): static;
 
-    protected ?\stdClass $query = null;
+    public function from(string $table): static;
 
-    public function __construct(Connection $dbh)
-    {
-        $this->dbh = $dbh;
+    public function where(string $field, int $op, mixed $val): static;
+    public function groupBy(string ...$fields): static;
+    public function having(string $field, int $op, mixed $val): static;
+    public function orderBy(string ...$fields): static;
+    public function limit(int $rows, ?int $offset = null): static;
 
-        $this->reset();
-    }
+    public function and(string $field, int $op, mixed $val): static;
+    public function or(string $field, int $op, mixed $val): static;
+    public function xor(string $field, int $op, mixed $val): static;
 
-    public function reset(): static
-    {
-        $this->query = new \stdClass();
+    public function withRollup(): static;
 
-        $this->query->values = [];
+    public function insert(string $table): static;
+    public function colNames(string ...$columns): static;
+    public function values(int $type = self::THROW_ON_NULL, array ...$valueList): static;
 
-        return $this;
-    }
+    public function update(string $table): static;
+    public function set(iterable $assignments): static;
 
-    abstract public function select(string ...$fields): static;
-
-    abstract public function from(string $table): static;
-
-    abstract public function where(string $field, int $op, mixed $val): static;
-    abstract public function groupBy(string ...$fields): static;
-    abstract public function having(string $field, int $op, mixed $val): static;
-    abstract public function orderBy(string ...$fields): static;
-    abstract public function limit(int $rows, ?int $offset = null): static;
-
-    abstract public function and(string $field, int $op, mixed $val): static;
-    abstract public function or(string $field, int $op, mixed $val): static;
-    abstract public function xor(string $field, int $op, mixed $val): static;
-
-    abstract public function withRollup(): static;
-
-    abstract public function insert(string $table): static;
-    abstract public function colNames(string ...$columns): static;
-    abstract public function values(int $type = self::THROW_ON_NULL, array ...$valueList): static;
+    public function delete(string $table): static;
 
     //public function innerJoin(string $table): static;
 
@@ -89,13 +74,5 @@ abstract class QueryBuilder
     //abstract public function not(string $field, mixed $val): static;
 
     //public function is(string $field, bool $is = true): static;
-
-    public function run(): \PDOStatement
-    {
-        return $this->dbh->fromBuilder($this);
-    }
-
-    abstract public function getQuery(): string;
-    abstract public function getValues(): array;
 }
 

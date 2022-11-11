@@ -33,19 +33,17 @@ interface DataManipulationInterface
 {
     // XXX: Maybe we could use ...string and just say that the first string is the table
     public function select(
-        string | array $columns,
+        string|iterable $columns,
         string $table
     ): \PDOStatement;
-    // XXX: $values -> $rows maybe
     public function insert(
         string $table,
-        array ...$values
+        iterable ...$rows
     ): \PDOStatement;
     public function update(
         string $table,
-        array $columnValue,
-        array $columns,
-        ?array $conditions
+        iterable $assignments,
+        ?iterable $conditions
     ): \PDOStatement;
     public function delete(
         string $table,

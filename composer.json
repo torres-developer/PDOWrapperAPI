@@ -30,7 +30,8 @@
 	"ext-pdo": "*"
     },
     "require-dev": {
-        "pds/skeleton": "^1.0"
+        "pds/skeleton": "^1.0",
+        "friendsofphp/php-cs-fixer": "dev-master"
     },
     "autoload": {
         "psr-4": {

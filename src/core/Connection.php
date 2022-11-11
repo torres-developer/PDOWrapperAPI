@@ -27,6 +27,8 @@
  * @version 1.0.0
  */
 
+declare(strict_types=1);
+
 namespace TorresDeveloper\PdoWrapperAPI\Core;
 
 abstract class Connection implements ServiceInterface, DataManipulationInterface
@@ -124,14 +126,14 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
         return $this->service->query($statement, $values);
     }
 
-    final public function getBuider(): QueryBuilder
+    final public function getBuider(): AbstractQueryBuilder
     {
         return new ("TorresDeveloper\\PdoWrapperAPI\\"
-            . $this->service->getDriver()
+            . ucfirst($this->service->getDriver())
             . "QueryBuilder")($this);
     }
 
-    public function fromBuilder(QueryBuilder $query): \PDOStatement
+    public function fromBuilder(AbstractQueryBuilder $query): \PDOStatement
     {
         return $this->query(
             $this->createPDOStatement($query),
@@ -166,14 +168,14 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
     {
         foreach ($values as $v)
             foreach (self::invalidPatterns as $regex)
-                if (preg_match($regex, $v))
+                if (preg_match($regex, (string) $v))
                     return false;
 
         return true;
     }
 
     protected function createPDOStatement(
-        QueryBuilder | string $statement
+        AbstractQueryBuilder | string $statement
     ): \PDOStatement {
         if ($statement instanceof QueryBuilder)
             $statement = $statement->getQuery();

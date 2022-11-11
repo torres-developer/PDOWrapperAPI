@@ -27,11 +27,11 @@
  * @version 1.0.0
  */
 
+declare(strict_types=1);
+
 namespace TorresDeveloper\PdoWrapperAPI;
 
-use Error;
-
-class mysqlQueryBuilder extends Core\QueryBuilder
+class mysqlQueryBuilder extends Core\AbstractQueryBuilder
 {
     public function select(string ...$fields): static
     {
@@ -59,7 +59,7 @@ class mysqlQueryBuilder extends Core\QueryBuilder
 
     public function where(string $field, int $op, mixed $val): static
     {
-        if ($this->query->type !== "SELECT")
+        if (!in_array($this->query->type, ["SELECT", "SET", "DELETE"]))
             throw new \Exception();
 
         $this->query->base .= " WHERE `$field` " . $this->findSignal($op) . " ?";
@@ -107,6 +107,7 @@ class mysqlQueryBuilder extends Core\QueryBuilder
         return $this;
     }
 
+    // TODO: The WHERE can't be from an UPDATE. same for having, orderBy, limit
     public function groupBy(string ...$fields): static
     {
         if (!in_array($this->query->type, ["SELECT", "WHERE"]))
@@ -245,7 +246,7 @@ class mysqlQueryBuilder extends Core\QueryBuilder
             foreach ($this->query->columns as $column) {
                 if ($type == self::THROW_ON_NULL) {
                     if (!isset($list[$column]))
-                        throw new Error("Cannot find value for column");
+                        throw new \Error("Cannot find value for column");
 
                     $this->query->values[] = $list[$column];
                 } else if ($type == self::DEFAULT_ON_NULL) {
@@ -267,6 +268,46 @@ class mysqlQueryBuilder extends Core\QueryBuilder
         $this->query->base .= implode(", ", $inserts);
 
         $this->query->type = "VALUES";
+
+        return $this;
+    }
+
+    public function update(string $table): static
+    {
+        if (!$this->query) $this->reset();
+
+        $this->query->base = "UPDATE `$table`";
+        $this->query->type = "UPDATE";
+
+        return $this;
+    }
+
+    public function set(iterable $assignments): static
+    {
+        if ($this->query->type !== "UPDATE")
+            throw new \Exception();
+
+        $this->query->base .= " SET ";
+
+        $set = [];
+        foreach ($assignments as $column => $value) {
+            $set[] = "$column=?";
+            $this->query->values[] = $value;
+        }
+
+        $this->query->base .= implode(", ", $set);
+
+        $this->query->type = "SET";
+
+        return $this;
+    }
+
+    public function delete(string $table): static
+    {
+        if (!$this->query) $this->reset();
+
+        $this->query->base = "DELETE FROM `$table`";
+        $this->query->type = "DELETE";
 
         return $this;
     }
