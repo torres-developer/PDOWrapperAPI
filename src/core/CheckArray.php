@@ -29,15 +29,36 @@
 
 namespace TorresDeveloper\PdoWrapperAPI\Core;
 
+/**
+ * Trait with function to help checking if a key is set in an array and getting is value if it is.
+ *
+ * @author João Torres <torres.dev@disroot.org>
+ */
 trait CheckArray
 {
+    /**
+     * Checks key is set in an array
+     *
+     * @param array $arr The array
+     * @param int|string|float|bool|null $arr The key.
+     *
+     * @return bool
+     */
     protected function checkArray(
-        array $array,
-        int | string | float | bool | null $key
+        array $arr,
+        int | string | float | bool | null $k
     ): bool {
-        return isset($array[$key]) && $array[$key];
+        return isset($arr[$k]);
     }
 
+    /**
+     * Returns the value for a key is it is setted.
+     *
+     * @param array $arr The array
+     * @param int|string|float|bool|null $arr The key.
+     *
+     * @return mixed
+     */
     protected function checkArrayValue(
         array $array,
         int | string | float | bool | null $key
@@ -45,4 +66,3 @@ trait CheckArray
         return $this->checkArray($array, $key) ? $array[$key] : null;
     }
 }
-

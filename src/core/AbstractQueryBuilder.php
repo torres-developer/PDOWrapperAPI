@@ -30,30 +30,30 @@
 namespace TorresDeveloper\PdoWrapperAPI\Core;
 
 /**
- * An basic base for all \TorresDeveloper\PdoWrapperAPI\Core\QueryBuilder
+ * An basic base for all \TorresDeveloper\PdoWrapperAPI\Core\QueryBuilder.
  *
  * @author João Torres <torres.dev@disroot.org>
  */
 abstract class AbstractQueryBuilder implements QueryBuilder
 {
     /**
-     * @var \TorresDeveloper\PdoWrapperAPI\Core\Connection $dbh An proxy for our database
+     * @var \TorresDeveloper\PdoWrapperAPI\Core\Connection $dbh An proxy for our database.
      */
     protected Connection $dbh;
 
     /**
-     * @var \stdClass $query Auxiliary key => value object to help in some operations
+     * @var \stdClass $query Auxiliary key => value object to help in some operations.
      *
      * TODO: Maybe create a class for this.
      */
     protected ?\stdClass $query = null;
 
     /**
-     * The __construct of an \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder
+     * The __construct of an \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder.
      *
      * @param \TorresDeveloper\PdoWrapperAPI\Core\Connection $dbh
      *
-     * @throws \RuntimeException In case of no connection with a database
+     * @throws \RuntimeException In case of no connection with a database.
      *
      * @return \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder
      */
@@ -94,14 +94,14 @@ abstract class AbstractQueryBuilder implements QueryBuilder
     }
 
     /**
-     * Returns the current SQL query
+     * Returns the current SQL query.
      *
      * @return string
      */
     abstract public function getQuery(): string;
 
     /**
-     * Returns the values that will be binded for the placeholders '?'
+     * Returns the values that will be binded for the placeholders '?'.
      * TODO: link to '?' docs
      *
      * @return array
