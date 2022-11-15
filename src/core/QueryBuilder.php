@@ -74,5 +74,7 @@ interface QueryBuilder
     //abstract public function not(string $field, mixed $val): static;
 
     //public function is(string $field, bool $is = true): static;
+    
+    public function reset(): static;
 }
 
