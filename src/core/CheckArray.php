@@ -27,6 +27,8 @@
  * @version 1.0.0
  */
 
+declare(strict_types=1);
+
 namespace TorresDeveloper\PdoWrapperAPI\Core;
 
 /**
@@ -39,8 +41,8 @@ trait CheckArray
     /**
      * Checks key is set in an array
      *
-     * @param array $arr The array
-     * @param int|string|float|bool|null $arr The key.
+     * @param array                      $arr The array
+     * @param int|string|float|bool|null $key The key.
      *
      * @return bool
      */
@@ -54,15 +56,15 @@ trait CheckArray
     /**
      * Returns the value for a key is it is setted.
      *
-     * @param array $arr The array
-     * @param int|string|float|bool|null $arr The key.
+     * @param array                      $arr The array
+     * @param int|string|float|bool|null $key The key.
      *
      * @return mixed
      */
     protected function checkArrayValue(
-        array $array,
-        int | string | float | bool | null $key
+        array $arr,
+        int | string | float | bool | null $k
     ): mixed {
-        return $this->checkArray($array, $key) ? $array[$key] : null;
+        return $this->checkArray($arr, $k) ? $arr[$k] : null;
     }
 }

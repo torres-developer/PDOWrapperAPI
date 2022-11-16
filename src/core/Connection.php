@@ -31,13 +31,25 @@ declare(strict_types=1);
 
 namespace TorresDeveloper\PdoWrapperAPI\Core;
 
+/**
+ * Proxy for a TorresDeveloper\PdoWrapperAPI\Core\Service.
+ *
+ * @author João Torres <torres.dev@disroot.org>
+ */
 abstract class Connection implements ServiceInterface, DataManipulationInterface
 {
     use CheckArray;
 
+    /**
+     * @var \TorresDeveloper\PdoWrapperAPI\Core\Service $service The real service.
+     */
     private Service $service;
 
-    public const invalidPatterns = [
+    /**
+     * @var string[] INVALID_PATTERNS Array with PREG regexes of invalid patterns in SQL queries to prevent SQL
+     *                                injection.
+     */
+    public const INVALID_PATTERNS = [
         "/OR\s+1\s*=\s*1/i",    // OR 1=1
         "/\"\s+OR\s+\"\"=\"/i", // " OR ""="
         "/;/",                  // ;
@@ -46,23 +58,56 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
     ];
 
     /**
-     * @var \PDOStatement[] $cache
+     * @var \PDOStatement[] $cache Cache for results of SELECT SQL queries.
      */
     private array $cache = [];
 
-    public function __construct(DataSourceName $dsn, ?array $options = [])
+    /**
+     * The __construct of a \TorresDeveloper\PdoWrapperAPI\Core\Connection.
+     *
+     * @param \TorresDeveloper\PdoWrapperAPI\Core\DataSourceName $dsn Information that helps creating an \PDO object.
+     * @param array|null                                         $opts Some extra opitional options for the \PDO object.
+     *
+     * @throws \RuntimeException In case of a bad dsn string for the \PDO __construct.
+     *
+     * @return \TorresDeveloper\PdoWrapperAPI\Core\Connection
+     */
+    public function __construct(DataSourceName $dsn, ?array $opts = [])
     {
         $dsn->setDsn($this->genDSN($dsn));
         $dsn->setDriver($this->genDriver());
 
-        if (!$dsn->hasDsn()) throw new \Exception();
+        if (!$dsn->hasDsn()) {
+            throw new \RuntimeException("Could not generate resources to "
+                . "connect to the database.");
+        }
 
-        $this->service = Service::getInstance($dsn, $options);
+        $this->service = Service::getInstance($dsn, $opts);
     }
 
+    /**
+     * Returns a dsn string to use on the \PDO __construct using information from the $dsn object.
+     *
+     * @param \TorresDeveloper\PdoWrapperAPI\Core\DataSourceName $dsn Object with some information to create the dsn
+     *                                                                string.
+     *
+     * @return string
+     */
     abstract protected function genDSN(DataSourceName $dsn): string;
+
+    /**
+     * Returns the driver for which the \TorresDeveloper\PdoWrapperAPI\Core\Connection is made for. Supported driver
+     * names are the ones returned from \PDO::getAvailableDrivers().
+     *
+     * @return string
+     */
     abstract protected function genDriver(): string;
 
+    /**
+     * Tests if the service is null
+     *
+     * @return bool
+     */
     public function hasService(): bool
     {
         return (bool) $this->service;
@@ -102,8 +147,23 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
         $this->service->rollBack();
     }
 
+    /**
+     * The proxy:
+     * - Transforms string $statement into \PDOStatement;
+     * - Checks for possible SQL injections in $values;
+     * - Checks if it's a SELECT query and if it's results are cached already.
+     *
+     * After that sends the $statement to the service to be executed using the $values.
+     *
+     * @param \PDOStatement|string $statement The query to execute.
+     * @param null|array           $values    Values for the placeholders in $statement.
+     *
+     * @throws \DomainException In case of possible SQL injection.
+     *
+     * @return \PDOStatement Results from the query.
+     */
     final public function query(
-        \PDOStatement | string $statement,
+        \PDOStatement|string $statement,
         ?array $values = null
     ): \PDOStatement {
         if (is_string($statement))
@@ -111,14 +171,16 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
 
         $values ??= [];
 
-        if (!self::checkForSQLInjections($values))
-            throw new \Exception();
+        if ($injection = self::checkForSQLInjections($values)) {
+            throw new \DomainException("Dangerous user input `$injection`.");
+        }
 
         if (str_starts_with($statement->queryString, "SELECT")) {
             $key = $this->genQuery($statement, $values);
 
-            if (!isset($this->cache[$key]))
+            if (!isset($this->cache[$key])) {
                 $this->cache[$key] = $this->service->query($statement, $values);
+            }
 
             return $this->cache[$key];
         }
@@ -126,6 +188,10 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
         return $this->service->query($statement, $values);
     }
 
+    /**
+     * @return \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder This QueryBuilder is the one for the specific
+     *                                                                  driver returned from genDriver().
+     */
     final public function getBuider(): AbstractQueryBuilder
     {
         return new ("TorresDeveloper\\PdoWrapperAPI\\"
@@ -133,6 +199,11 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
             . "QueryBuilder")($this);
     }
 
+    /**
+     * @param \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder $query The QueryBuilder you want to execute.
+     *
+     * @return \PDOStatement
+     */
     public function fromBuilder(AbstractQueryBuilder $query): \PDOStatement
     {
         return $this->query(
@@ -141,6 +212,12 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
         );
     }
 
+    /**
+     * @param \PDOStatement $statement The query with placeholders.
+     * @param array         $values    Values for the placeholders in $statement.
+     *
+     * @return string The string for the SQL query.
+     */
     public function genQuery(\PDOStatement $statement, array $values): string
     {
         $i = 0;
@@ -149,14 +226,17 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
             function () use ($values, $i): string {
                 $v = $values[$i++] ?? null;
 
-                if (!isset($v))
+                if (!isset($v)) {
                     return "NULL";
+                }
 
-                if (is_bool($v))
+                if (is_bool($v)) {
                     return $v ? "TRUE" : "FALSE";
+                }
 
-                if (is_string($v))
+                if (is_string($v)) {
                     return $this->pdo->quote($v);
+                }
 
                 return (string) $v;
             },
@@ -164,27 +244,48 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
         );
     }
 
-    public static function checkForSQLInjections(array $values): bool
+    /**
+     * @param array $values Values for the placeholders in a \PDOStatement.
+     *
+     * @return null|string The possible dangerous string.
+     */
+    public static function checkForSQLInjections(array $values): ?string
     {
-        foreach ($values as $v)
-            foreach (self::invalidPatterns as $regex)
-                if (preg_match($regex, (string) $v))
-                    return false;
+        foreach ($values as $v) {
+            if (!is_string($v)) {
+                continue;
+            }
 
-        return true;
+            foreach (static::INVALID_PATTERNS as $regex) {
+                if (preg_match($regex, $v)) {
+                    return $v;
+                }
+            }
+        }
+
+        return null;
     }
 
+    /**
+     * @param \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder|string $statement
+     *
+     * @return \PDOStatement
+     */
     protected function createPDOStatement(
         AbstractQueryBuilder | string $statement
     ): \PDOStatement {
-        if ($statement instanceof QueryBuilder)
+        if ($statement instanceof QueryBuilder) {
             $statement = $statement->getQuery();
+        }
 
+        // XXX GETPDO needs to change!!!
         $pdo = $this->service->getPDO($this);
 
         $statement = $pdo->prepare($statement);
 
-        if (!$statement) throw new \RuntimeException($pdo->errorInfo()[2]);
+        if (!$statement) {
+            throw new \RuntimeException($pdo->errorInfo()[2]);
+        }
 
         return $statement;
     }
