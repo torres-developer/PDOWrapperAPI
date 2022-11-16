@@ -36,7 +36,7 @@ $dbh->select(["name", "age"], "user")->fetchAll(PDO::FETCH_OBJ);
 // insert new users
 $users = [
     ["id" => 123, "name" => "asdfs"],
-    ["age => 2],
+    ["age" => 2],
     ["id" => null, "text" => "y7tgebh"]
 ];
 $dbh->insert("user", ...$users);
