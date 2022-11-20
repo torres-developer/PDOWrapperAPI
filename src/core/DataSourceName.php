@@ -27,11 +27,15 @@
  * @version 1.0.0
  */
 
+declare(strict_types=1);
+
 namespace TorresDeveloper\PdoWrapperAPI\Core;
 
 /**
+ * Helper class for the $dsn parameter for the \PDO __construct {@link https://www.php.net/manual/en/pdo.construct.php
+ * PHP \PDO __construct documentation}
+ *
  * @author João Torres <torres.dev@disroot.org>
- * @link https://www.php.net/manual/en/pdo.construct.php PHP \PDO __construct documentation
  */
 final class DataSourceName
 {
@@ -84,7 +88,7 @@ final class DataSourceName
         $drivers = \PDO::getAvailableDrivers();
 
         if (!in_array($driver, $drivers, true))
-            throw new \DomainException("Invalid driver or driver not "
+            throw new \RuntimeException("Invalid driver or driver not "
                 . "supported.\nSupported drivers:\n\t- "
                 . implode(";\n\t- ", $drivers) . ".");
 

@@ -27,20 +27,42 @@
  * @version 1.0.0
  */
 
+declare(strict_types=1);
+
 namespace TorresDeveloper\PdoWrapperAPI\Core;
 
+/**
+ * This trait has a function that returns the best \PDO::PARAM_* for the given value to help with the \PDOStatement
+ * bindValue() and bindParam().
+ *
+ * @author João Torres <torres.dev@disroot.org>
+ */
 trait ParamTypeFinder
 {
-    protected function findParam(mixed $value): ?int
+    /**
+     * Finds best suitable \PDO::PARAM_* for a given value.
+     *
+     * @param mixed $value
+     *
+     * @return null|int An \PDO::PARAM_*.
+     */
+    protected function findParam(mixed $x): ?int
     {
+        if (is_null($x)) {
+            return \PDO::PARAM_NULL;
+        }
 
-        if (is_bool($value)) return \PDO::PARAM_BOOL;
+        if (is_bool($x)) {
+            return \PDO::PARAM_BOOL;
+        }
 
-        if (is_null($value)) return \PDO::PARAM_NULL;
+        if (is_int($x)) {
+            return \PDO::PARAM_INT;
+        }
 
-        if (is_int($value)) return \PDO::PARAM_INT;
-
-        if (is_string($value)) return \PDO::PARAM_STR;
+        if (is_string($x)) {
+            return \PDO::PARAM_STR;
+        }
 
         return null;
     }
