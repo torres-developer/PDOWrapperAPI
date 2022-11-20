@@ -27,13 +27,29 @@
  * @version 1.0.0
  */
 
+declare(strict_types=1);
+
 namespace TorresDeveloper\PdoWrapperAPI\Core;
 
+/**
+ * Username and password for the database user.
+ *
+ * @author João Torres <torres.dev@disroot.org>
+ */
 final class Credentials
 {
+    /**
+     * @var null|string $name Username.
+     */
     private ?string $name = null;
+    /**
+     * @var null|string $password Password.
+     */
     private ?string $password = null;
 
+    /**
+     * @var \TorresDeveloper\PdoWrapperAPI\Core\Credentials[] $cache Cache for the credentials.
+     */
     private static array $cache = [];
     
     private function __construct(?string $name, ?string $password) {

@@ -111,17 +111,6 @@ class MysqlConnection extends Connection
         return "mysql";
     }
 
-    /**
-     * @param string|string[]|\Traversable $columns Array of the columns to select from the table $table.
-     *                                              In case this is a string:
-     *                                              - maybe you want just one column or;
-     *                                              - if $table it's null then $columns will be the table and
-     *                                              all columns are selected.
-     * @param null|string                  $table   Name of the table to select.
-     *                                              If it's null $columns must be the table name.
-     *
-     * @return \PDOStatement
-     */
     public function select(
         string|iterable $columns,
         ?string $table = null
@@ -139,12 +128,6 @@ class MysqlConnection extends Connection
         return $this->getBuider()->select(...$columns)->from($table)->run();
     }
 
-    /**
-     * @param string      $table Table where you want to insert the rows $rows.
-     * @param ...iterable $rows  The rows, each one an iterable column => value.
-     *
-     * @return \PDOStatement
-     */
     public function insert(
         string $table,
         iterable ...$rows
@@ -155,45 +138,28 @@ class MysqlConnection extends Connection
             ->run();
     }
 
-    /**
-     * @param string        $table       Table where you want to update the rows.
-     * @param iterable      $assignments What you want to update plus its new assignment, an iterable column => value.
-     * @param null|iterable $conditions  Some conditions to filter which rows are going to be updated.
-     *                                   An iterable column => value.
-     *                                   For a row to be updated it needs to have column=value for all conditions.
-     *
-     * @return \PDOStatement
-     */
     public function update(
         string $table,
         iterable $assignments,
-        ?iterable $conditions
+        iterable $conditions = []
     ): \PDOStatement {
         $query = $this->getBuider()
             ->update($table)
             ->set($assignments);
 
-        if (isset($conditions)) {
+        if (!empty($conditions)) {
             $this->whereAllConditions($query, $conditions);
         }
 
         return $query->run();
     }
 
-    /**
-     * @param string        $table       Table where you want to delete the rows.
-     * @param null|iterable $conditions  Some conditions to filter which rows are going to be deleted.
-     *                                   An iterable column => value.
-     *                                   For a row to be deleted it needs to have column=value for all conditions.
-     *
-     * @return \PDOStatement
-     */
-    public function delete(string $table, ?array $conditions): \PDOStatement
+    public function delete(string $table, array $conditions = []): \PDOStatement
     {
         $query = $this->getBuider()
             ->delete($table);
 
-        if (isset($conditions)) {
+        if (!empty($conditions)) {
             $this->whereAllConditions($query, $conditions);
         }
 
