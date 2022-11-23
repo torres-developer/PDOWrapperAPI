@@ -1,7 +1,10 @@
 composer.phar
 /vendor/
+/tools/
 
 .php-cs-fixer.cache
+/.phpdoc/
+/docs/api/
 
 # using this file for test and it has passwords
 /src/index.php

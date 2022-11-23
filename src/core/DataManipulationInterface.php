@@ -19,12 +19,12 @@
  *
  * @package TorresDeveloper\\PdoWrapperAPI\\Core
  * @author João Torres <torres.dev@disroot.org>
- * @copyright Copyright (C) 2022  João Torres
+ * @copyright Copyright (C) 2022 João Torres
  * @license https://www.gnu.org/licenses/agpl-3.0.txt GNU Affero General Public License
  * @license https://opensource.org/licenses/AGPL-3.0 GNU Affero General Public License version 3
  *
  * @since 1.0.0
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 declare(strict_types=1);
@@ -35,13 +35,12 @@ namespace TorresDeveloper\PdoWrapperAPI\Core;
  * Interface to implement DML operations.
  *
  * @author João Torres <torres.dev@disroot.org>
+ *
+ * @since 1.0.0
+ * @version 2.0.0
  */
 interface DataManipulationInterface
 {
-    /**
-     * DML
-     */
-
     /**
      * Retrieve multiple rows from a specified table.
      *
@@ -53,7 +52,9 @@ interface DataManipulationInterface
      * @param null|string                  $table   Name of the table to select.
      *                                              If null $columns must be the table name.
      *
-     * @return \PDOStatement
+     * @return \PDOStatement {@see https://secure.php.net/manual/en/class.pdostatement.php}
+     *
+     * @api
      */
     public function select(
         string|iterable $columns,
@@ -63,10 +64,12 @@ interface DataManipulationInterface
     /**
      * Create new rows in a table.
      *
-     * @param string      $table Table to create the new rows $rows.
-     * @param ...iterable $rows  The rows, each one a iterable column => value.
+     * @param string             $table Table to create the new rows $rows.
+     * @param array|\Traversable $rows  The rows, each one a iterable column => value.
      *
-     * @return \PDOStatement
+     * @return \PDOStatement {@see https://secure.php.net/manual/en/class.pdostatement.php}
+     *
+     * @api
      */
     public function insert(
         string $table,
@@ -83,7 +86,9 @@ interface DataManipulationInterface
      *                              An iterable column => value.
      *                              For a row to be updated, (column == value) needs to be true for all conditions.
      *
-     * @return \PDOStatement
+     * @return \PDOStatement {@see https://secure.php.net/manual/en/class.pdostatement.php}
+     *
+     * @api
      */
     public function update(
         string $table,
@@ -99,7 +104,9 @@ interface DataManipulationInterface
      *                              An iterable column => value.
      *                              For a row to be deleted, (column == value) needs to be true for all conditions.
      *
-     * @return \PDOStatement
+     * @return \PDOStatement {@see https://secure.php.net/manual/en/class.pdostatement.php}
+     *
+     * @api
      */
     public function delete(
         string $table,

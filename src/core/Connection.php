@@ -32,7 +32,9 @@ declare(strict_types=1);
 namespace TorresDeveloper\PdoWrapperAPI\Core;
 
 /**
- * Proxy for a TorresDeveloper\PdoWrapperAPI\Core\Service.
+ * Proxy for a \TorresDeveloper\PdoWrapperAPI\Core\Service.
+ *
+ * @uses \TorresDeveloper\PdoWrapperAPI\Core\DataManipulationInterface
  *
  * @author João Torres <torres.dev@disroot.org>
  */
