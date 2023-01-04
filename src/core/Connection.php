@@ -57,7 +57,7 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
     /**
      * @var string[] Array with PREG regexes of invalid patterns in SQL queries to prevent SQL injection.
      */
-    public static const INVALID_PATTERNS = [
+    public const INVALID_PATTERNS = [
         "/OR\s+1\s*=\s*1/i",    // OR 1=1
         "/\"\s+OR\s+\"\"=\"/i", // " OR ""="
         "/;/",                  // ;

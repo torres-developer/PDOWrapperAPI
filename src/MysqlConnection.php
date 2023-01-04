@@ -125,14 +125,14 @@ class MysqlConnection extends Connection
             }
         }
 
-        return $this->getBuider()->select(...$columns)->from($table)->run();
+        return $this->getBuilder()->select(...$columns)->from($table)->run();
     }
 
     public function insert(
         string $table,
         iterable ...$rows
     ): \PDOStatement {
-        return $this->getBuider()
+        return $this->getBuilder()
             ->insert($table)
             ->values(QueryBuilder::DEFAULT_ON_NULL, ...$rows)
             ->run();
@@ -143,7 +143,7 @@ class MysqlConnection extends Connection
         iterable $assignments,
         iterable $conditions = []
     ): \PDOStatement {
-        $query = $this->getBuider()
+        $query = $this->getBuilder()
             ->update($table)
             ->set($assignments);
 
@@ -154,9 +154,11 @@ class MysqlConnection extends Connection
         return $query->run();
     }
 
-    public function delete(string $table, array $conditions = []): \PDOStatement
-    {
-        $query = $this->getBuider()
+    public function delete(
+        string $table,
+        iterable $conditions = []
+    ): \PDOStatement {
+        $query = $this->getBuilder()
             ->delete($table);
 
         if (!empty($conditions)) {
