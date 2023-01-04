@@ -19,11 +19,11 @@
  *
  * @package TorresDeveloper\\PdoWrapperAPI\\Core
  * @author João Torres <torres.dev@disroot.org>
- * @copyright Copyright (C) 2022  João Torres
+ * @copyright Copyright (C) 2022 João Torres
  * @license https://www.gnu.org/licenses/agpl-3.0.txt GNU Affero General Public License
  * @license https://opensource.org/licenses/AGPL-3.0 GNU Affero General Public License version 3
  *
- * @since 1.0.0
+ * @since 2.0.0
  * @version 1.0.0
  */
 
@@ -34,30 +34,35 @@ namespace TorresDeveloper\PdoWrapperAPI\Core;
 /**
  * An basic base for all \TorresDeveloper\PdoWrapperAPI\Core\QueryBuilder.
  *
+ * @see \TorresDeveloper\PdoWrapperAPI\Core\QueryBuilderData To know what kind of data can be saved
+ *
+ * @uses \TorresDeveloper\PdoWrapperAPI\Core\QueryBuilder
+ * @uses \TorresDeveloper\PdoWrapperAPI\Core\Connection
+ * @uses \TorresDeveloper\PdoWrapperAPI\Core\QueryBuilderData To hold some data for the builder
+ *
  * @author João Torres <torres.dev@disroot.org>
+ *
+ * @since 2.0.0
+ * @version 1.0.0
  */
 abstract class AbstractQueryBuilder implements QueryBuilder
 {
     /**
-     * @var \TorresDeveloper\PdoWrapperAPI\Core\Connection $dbh An proxy for our database.
+     * @var \TorresDeveloper\PdoWrapperAPI\Core\Connection An proxy for our database.
      */
     protected Connection $dbh;
 
     /**
-     * @var \stdClass $query Auxiliary key => value object to help in some operations.
-     *
-     * TODO: Maybe create a class for this.
+     * @var \TorresDeveloper\PdoWrapperAPI\Core\QueryBuilderData Auxiliary object to help on holding some data for
+     *                                                           future operations.
      */
-    protected ?\stdClass $query = null;
+    protected QueryBuilderData $data;
 
     /**
-     * The __construct of an \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder.
-     *
-     * @param \TorresDeveloper\PdoWrapperAPI\Core\Connection $dbh
+     * @uses \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder::$dbh
+     * @uses \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder::$data
      *
      * @throws \RuntimeException In case of no connection with a database.
-     *
-     * @return \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder
      */
     public function __construct(Connection $dbh)
     {
@@ -68,45 +73,28 @@ abstract class AbstractQueryBuilder implements QueryBuilder
 
         $this->dbh = $dbh;
 
-        $this->reset();
+        $this->data = new QueryBuilderData($this);
     }
 
     /**
-     * Resets the \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder so you can create an query from the start.
+     * @inheritdoc
      *
-     * @return \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder
+     * @uses \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder::$data
      */
     public function reset(): static
     {
-        $this->query = new \stdClass();
-
-        $this->query->values = [];
+        $this->data->reset();
 
         return $this;
     }
 
     /**
-     * Executes the final query and returns an \PDOStatement so you can check the results.
+     * @inheritdoc
      *
-     * @return \PDOStatement
+     * @uses \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder::$dbh
      */
     public function run(): \PDOStatement
     {
         return $this->dbh->fromBuilder($this);
     }
-
-    /**
-     * Returns the current SQL query.
-     *
-     * @return string
-     */
-    abstract public function getQuery(): string;
-
-    /**
-     * Returns the values that will be binded for the placeholders '?'.
-     * TODO: link to '?' docs
-     *
-     * @return array
-     */
-    abstract public function getValues(): array;
 }

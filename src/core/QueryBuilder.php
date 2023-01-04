@@ -211,8 +211,39 @@ interface QueryBuilder
     //public function is(string $field, bool $is = true): static;
     
     /**
+     * Resets the \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder so you can create an query from the start.
+     *
      * @api
+     *
+     * @return \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder
      */
     public function reset(): static;
+
+    /**
+     * Executes the final query and returns an \PDOStatement so you can check the results.
+     *
+     * @api
+     *
+     * @return \PDOStatement
+     */
+    public function run(): \PDOStatement;
+
+    /**
+     * Returns the current SQL query.
+     *
+     * @internal
+     *
+     * @return string
+     */
+    public function getQuery(): string;
+
+    /**
+     * Returns the values that will be binded for the '?' placeholders.
+     *
+     * @internal
+     *
+     * @return iterable
+     */
+    public function getValues(): iterable;
 }
 

@@ -19,11 +19,11 @@
  *
  * @package TorresDeveloper\\PdoWrapperAPI\\Core
  * @author João Torres <torres.dev@disroot.org>
- * @copyright Copyright (C) 2022  João Torres
+ * @copyright Copyright (C) 2022 João Torres
  * @license https://www.gnu.org/licenses/agpl-3.0.txt GNU Affero General Public License
  * @license https://opensource.org/licenses/AGPL-3.0 GNU Affero General Public License version 3
  *
- * @since 1.0.0
+ * @since 2.0.0
  * @version 1.0.0
  */
 
@@ -34,24 +34,30 @@ namespace TorresDeveloper\PdoWrapperAPI\Core;
 /**
  * Proxy for a \TorresDeveloper\PdoWrapperAPI\Core\Service.
  *
+ * @see \TorresDeveloper\PdoWrapperAPI\Core\Service See what the real service does
+ *
+ * @uses \TorresDeveloper\PdoWrapperAPI\Core\Service
+ * @uses \TorresDeveloper\PdoWrapperAPI\Core\ServiceInterface
  * @uses \TorresDeveloper\PdoWrapperAPI\Core\DataManipulationInterface
  *
  * @author João Torres <torres.dev@disroot.org>
+ *
+ * @since 2.0.0
+ * @version 1.0.0
  */
 abstract class Connection implements ServiceInterface, DataManipulationInterface
 {
     use CheckArray;
 
     /**
-     * @var \TorresDeveloper\PdoWrapperAPI\Core\Service $service The real service.
+     * @var \TorresDeveloper\PdoWrapperAPI\Core\Service The real service.
      */
     private Service $service;
 
     /**
-     * @var string[] INVALID_PATTERNS Array with PREG regexes of invalid patterns in SQL queries to prevent SQL
-     *                                injection.
+     * @var string[] Array with PREG regexes of invalid patterns in SQL queries to prevent SQL injection.
      */
-    public const INVALID_PATTERNS = [
+    public static const INVALID_PATTERNS = [
         "/OR\s+1\s*=\s*1/i",    // OR 1=1
         "/\"\s+OR\s+\"\"=\"/i", // " OR ""="
         "/;/",                  // ;
@@ -60,19 +66,22 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
     ];
 
     /**
-     * @var \PDOStatement[] $cache Cache for results of SELECT SQL queries.
+     * @var \PDOStatement[] Cache for results of SELECT SQL queries.
      */
-    private array $cache = [];
+    protected array $cache = [];
 
     /**
-     * The __construct of a \TorresDeveloper\PdoWrapperAPI\Core\Connection.
-     *
-     * @param \TorresDeveloper\PdoWrapperAPI\Core\DataSourceName $dsn Information that helps creating an \PDO object.
+     * @param \TorresDeveloper\PdoWrapperAPI\Core\DataSourceName $dsn Information that helps creating a \PDO object.
      * @param array|null                                         $opts Some extra opitional options for the \PDO object.
      *
-     * @throws \RuntimeException In case of a bad dsn string for the \PDO __construct.
+     * @see \TorresDeveloper\PdoWrapperAPI\Core\Service
      *
-     * @return \TorresDeveloper\PdoWrapperAPI\Core\Connection
+     * @uses \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder::genDSN()
+     * @uses \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder::genDriver()
+     *
+     * @uses \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder::$service
+     *
+     * @throws \RuntimeException In case of a bad dsn string for the \PDO __construct.
      */
     public function __construct(DataSourceName $dsn, ?array $opts = [])
     {
@@ -108,16 +117,14 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
     /**
      * Tests if the service is null
      *
+     * @api
+     *
      * @return bool
      */
     public function hasService(): bool
     {
         return (bool) $this->service;
     }
-
-    /**
-     * \PDO interface methods
-     */
 
     public function beginTransaction(): void
     {
@@ -149,21 +156,6 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
         $this->service->rollBack();
     }
 
-    /**
-     * The proxy:
-     * - Transforms string $statement into \PDOStatement;
-     * - Checks for possible SQL injections in $values;
-     * - Checks if it's a SELECT query and if it's results are cached already.
-     *
-     * After that sends the $statement to the service to be executed using the $values.
-     *
-     * @param \PDOStatement|string $statement The query to execute.
-     * @param null|array           $values    Values for the placeholders in $statement.
-     *
-     * @throws \DomainException In case of possible SQL injection.
-     *
-     * @return \PDOStatement Results from the query.
-     */
     final public function query(
         \PDOStatement|string $statement,
         ?array $values = null
@@ -194,7 +186,7 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
      * @return \TorresDeveloper\PdoWrapperAPI\Core\AbstractQueryBuilder This QueryBuilder is the one for the specific
      *                                                                  driver returned from genDriver().
      */
-    final public function getBuider(): AbstractQueryBuilder
+    final public function getBuilder(): AbstractQueryBuilder
     {
         return new ("TorresDeveloper\\PdoWrapperAPI\\"
             . ucfirst($this->service->getDriver())

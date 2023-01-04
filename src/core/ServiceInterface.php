@@ -31,12 +31,31 @@ namespace TorresDeveloper\PdoWrapperAPI\Core;
 
 interface ServiceInterface
 {
+    /**
+     * Sends the $statement to the service to be executed using the $values.
+     *
+     * The proxy:
+     * - Transforms string $statement into \PDOStatement;
+     * - Checks for possible SQL injections in $values;
+     * - Checks if it's a SELECT query and if it's results are cached already.
+     *
+     * After that sends the $statement to the service to be executed using the $values.
+     *
+     * @internal
+     *
+     * @param \PDOStatement|string $statement The query to execute.
+     * @param null|array           $values    Values for the placeholders in $statement.
+     *
+     * @throws \DomainException In case of possible SQL injection.
+     *
+     * @return \PDOStatement Results from the query.
+     */
     public function query(
         \PDOStatement | string $statement,
         ?array $values = null,
     ): \PDOStatement;
 
-    /**
+    /*
      * \PDO interface methods
      */
 

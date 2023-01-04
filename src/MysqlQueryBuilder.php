@@ -35,74 +35,74 @@ class mysqlQueryBuilder extends Core\AbstractQueryBuilder
 {
     public function select(string ...$fields): static
     {
-        if (!$this->query) $this->reset();
+        if (!$this->data) $this->reset();
 
         $fields = array_filter($fields, fn ($i) => $i);
 
         if (!$fields) $fields = ["*"];
 
-        $this->query->base = "SELECT " . implode(", ", $fields);
-        $this->query->type = "SELECT";
+        $this->data->query = "SELECT " . implode(", ", $fields);
+        $this->data->type = "SELECT";
 
         return $this;
     }
 
     public function from(string $table): static
     {
-        if ($this->query->type !== "SELECT")
+        if ($this->data->type !== "SELECT")
             throw new \Exception();
 
-        $this->query->base .= " FROM $table";
+        $this->data->query .= " FROM $table";
 
         return $this;
     }
 
     public function where(string $field, int $op, mixed $val): static
     {
-        if (!in_array($this->query->type, ["SELECT", "SET", "DELETE"]))
+        if (!in_array($this->data->type, ["SELECT", "SET", "DELETE"]))
             throw new \Exception();
 
-        $this->query->base .= " WHERE `$field` " . $this->findSignal($op) . " ?";
+        $this->data->query .= " WHERE `$field` " . $this->findSignal($op) . " ?";
 
-        $this->query->values[] = $val;
+        $this->data->values[] = $val;
 
-        $this->query->type = "WHERE";
+        $this->data->type = "WHERE";
 
         return $this;
     }
 
     public function and(string $field, int $op, mixed $val): static
     {
-        if (!in_array($this->query->type, ["WHERE", "HAVING"]))
+        if (!in_array($this->data->type, ["WHERE", "HAVING"]))
             throw new \Exception();
 
-        $this->query->base .= " && `$field` " . $this->findSignal($op) . " ?";
+        $this->data->query .= " && `$field` " . $this->findSignal($op) . " ?";
 
-        $this->query->values[] = $val;
+        $this->data->values[] = $val;
 
         return $this;
     }
 
     public function or(string $field, int $op, mixed $val): static
     {
-        if (!in_array($this->query->type, ["WHERE", "HAVING"]))
+        if (!in_array($this->data->type, ["WHERE", "HAVING"]))
             throw new \Exception();
 
-        $this->query->base .= " || `$field` " . $this->findSignal($op) . " ?";
+        $this->data->query .= " || `$field` " . $this->findSignal($op) . " ?";
 
-        $this->query->values[] = $val;
+        $this->data->values[] = $val;
 
         return $this;
     }
 
     public function xor(string $field, int $op, mixed $val): static
     {
-        if (!in_array($this->query->type, ["WHERE", "HAVING"]))
+        if (!in_array($this->data->type, ["WHERE", "HAVING"]))
             throw new \Exception();
 
-        $this->query->base .= " XOR `$field` " . $this->findSignal($op) . " ?";
+        $this->data->query .= " XOR `$field` " . $this->findSignal($op) . " ?";
 
-        $this->query->values[] = $val;
+        $this->data->values[] = $val;
 
         return $this;
     }
@@ -110,19 +110,19 @@ class mysqlQueryBuilder extends Core\AbstractQueryBuilder
     // TODO: The WHERE can't be from an UPDATE. same for having, orderBy, limit
     public function groupBy(string ...$fields): static
     {
-        if (!in_array($this->query->type, ["SELECT", "WHERE"]))
+        if (!in_array($this->data->type, ["SELECT", "WHERE"]))
             throw new \Exception();
 
-        $this->query->base .= " GROUP BY " . implode(", ", $fields);
+        $this->data->query .= " GROUP BY " . implode(", ", $fields);
 
-        $this->query->type = "GROUP BY";
+        $this->data->type = "GROUP BY";
 
         return $this;
     }
 
     public function having(string $field, int $op, mixed $val): static
     {
-        if (!in_array($this->query->type, [
+        if (!in_array($this->data->type, [
             "SELECT",
             "WHERE",
             "GROUP BY",
@@ -130,20 +130,20 @@ class mysqlQueryBuilder extends Core\AbstractQueryBuilder
         ]))
             throw new \Exception();
 
-        $this->query->base .= " HAVING `$field` "
+        $this->data->query .= " HAVING `$field` "
             . $this->findSignal($op)
             . " ?";
 
-        $this->query->values[] = $val;
+        $this->data->values[] = $val;
 
-        $this->query->type = "HAVING";
+        $this->data->type = "HAVING";
 
         return $this;
     }
 
     public function orderBy(string ...$fields): static
     {
-        if (!in_array($this->query->type, [
+        if (!in_array($this->data->type, [
             "SELECT",
             "WHERE",
             "GROUP BY",
@@ -152,16 +152,16 @@ class mysqlQueryBuilder extends Core\AbstractQueryBuilder
         ]))
             throw new \Exception();
 
-        $this->query->base .= " ORDER BY " . implode(", ", $fields);
+        $this->data->query .= " ORDER BY " . implode(", ", $fields);
 
-        $this->query->type = "ORDER BY";
+        $this->data->type = "ORDER BY";
 
         return $this;
     }
 
     public function limit(int $rows, ?int $offset = null): static
     {
-        if (!in_array($this->query->type, [
+        if (!in_array($this->data->type, [
             "SELECT",
             "WHERE",
             "GROUP BY",
@@ -172,68 +172,68 @@ class mysqlQueryBuilder extends Core\AbstractQueryBuilder
         ]))
             throw new \Exception();
 
-        $this->query->base .= " LIMIT "
+        $this->data->query .= " LIMIT "
             . (isset($offset) ? "$offset, $rows" : $rows);
 
-        $this->query->type = "LIMIT";
+        $this->data->type = "LIMIT";
 
         return $this;
     }
 
     public function withRollup(): static
     {
-        if (!in_array($this->query->type, ["GROUP BY", "ORDER BY"]))
+        if (!in_array($this->data->type, ["GROUP BY", "ORDER BY"]))
             throw new \Exception();
 
-        $this->query->base .= " WITH ROLLUP";
+        $this->data->query .= " WITH ROLLUP";
 
-        $this->query->type .= " WITH ROOLUP";
+        $this->data->type .= " WITH ROOLUP";
 
         return $this;
     }
 
     public function insert(string $table): static
     {
-        if (!$this->query) $this->reset();
+        if (!$this->data) $this->reset();
 
-        $this->query->base = "INSERT INTO `$table`";
-        $this->query->type = "INSERT";
-        $this->query->columns = null;
-        $this->query->table = $table;
+        $this->data->query = "INSERT INTO `$table`";
+        $this->data->type = "INSERT";
+        $this->data->extras->columns = null;
+        $this->data->extras->table = $table;
 
         return $this;
     }
 
     public function colNames(string ...$columns): static
     {
-        if ($this->query->type !== "INSERT")
+        if ($this->data->type !== "INSERT")
             throw new \Exception();
 
         if ($columns)
-            $this->query->base .= "(`" . implode("`, `", $columns) . "`)";
+            $this->data->query .= "(`" . implode("`, `", $columns) . "`)";
 
-        $this->query->type .= " INTO";
-        $this->query->columns = $columns;
+        $this->data->type .= " INTO";
+        $this->data->extras->columns = $columns;
 
         return $this;
     }
 
     public function values(int $type = self::THROW_ON_NULL, array ...$valueLists): static
     {
-        if (!in_array($this->query->type, ["INSERT", "INSERT INTO", "VALUES"]))
+        if (!in_array($this->data->type, ["INSERT", "INSERT INTO", "VALUES"]))
             throw new \Exception();
 
         if ($type < self::THROW_ON_NULL || $type > self::NULL_ON_NULL)
             throw new \Exception();
 
-        if ($this->query->type !== "VALUES")
-            $this->query->base .= " VALUES ";
+        if ($this->data->type !== "VALUES")
+            $this->data->query .= " VALUES ";
 
-        if (!$this->query->columns) {
-            $this->query->columns = array_map(
+        if (!$this->data->extras->columns) {
+            $this->data->extras->columns = array_map(
                 fn ($i) => $i->Field,
                 $this->dbh->query(
-                    "SHOW COLUMNS FROM {$this->query->table};",
+                    "SHOW COLUMNS FROM {$this->data->extras->table};",
                     []
                 )->fetchAll(\PDO::FETCH_OBJ)
             );
@@ -243,83 +243,83 @@ class mysqlQueryBuilder extends Core\AbstractQueryBuilder
         foreach ($valueLists as $list) {
             $placeholders = [];
 
-            foreach ($this->query->columns as $column) {
+            foreach ($this->data->extras->columns as $column) {
                 if ($type == self::THROW_ON_NULL) {
                     if (!isset($list[$column]))
                         throw new \Error("Cannot find value for column");
 
-                    $this->query->values[] = $list[$column];
+                    $this->data->values[] = $list[$column];
                 } else if ($type == self::DEFAULT_ON_NULL) {
                     if (!isset($list[$column])) {
                         $placeholders[] = "DEFAULT";
                     } else {
                         $placeholders[] = "?";
-                        $this->query->values[] = $list[$column];
+                        $this->data->values[] = $list[$column];
                     }
                 } else if ($type == self::NULL_ON_NULL) {
                     $placeholders[] = "?";
-                    $this->query->values[] = $list[$column] ?? null;
+                    $this->data->values[] = $list[$column] ?? null;
                 }
             }
 
             $inserts[] =  "(" . implode(", ", $placeholders) . ")";
         }
         
-        $this->query->base .= implode(", ", $inserts);
+        $this->data->query .= implode(", ", $inserts);
 
-        $this->query->type = "VALUES";
+        $this->data->type = "VALUES";
 
         return $this;
     }
 
     public function update(string $table): static
     {
-        if (!$this->query) $this->reset();
+        if (!$this->data) $this->reset();
 
-        $this->query->base = "UPDATE `$table`";
-        $this->query->type = "UPDATE";
+        $this->data->query = "UPDATE `$table`";
+        $this->data->type = "UPDATE";
 
         return $this;
     }
 
     public function set(iterable $assignments): static
     {
-        if ($this->query->type !== "UPDATE")
+        if ($this->data->type !== "UPDATE")
             throw new \Exception();
 
-        $this->query->base .= " SET ";
+        $this->data->query .= " SET ";
 
         $set = [];
         foreach ($assignments as $column => $value) {
             $set[] = "$column=?";
-            $this->query->values[] = $value;
+            $this->data->values[] = $value;
         }
 
-        $this->query->base .= implode(", ", $set);
+        $this->data->query .= implode(", ", $set);
 
-        $this->query->type = "SET";
+        $this->data->type = "SET";
 
         return $this;
     }
 
     public function delete(string $table): static
     {
-        if (!$this->query) $this->reset();
+        if (!$this->data) $this->reset();
 
-        $this->query->base = "DELETE FROM `$table`";
-        $this->query->type = "DELETE";
+        $this->data->query = "DELETE FROM `$table`";
+        $this->data->type = "DELETE";
 
         return $this;
     }
 
     public function getQuery(): string
     {
-        return $this->query->base ?? "";
+        return $this->data->query;
     }
 
-    public function getValues(): array
+    public function getValues(): iterable
     {
-        return $this->query->values;
+        return $this->data->values;
     }
 
     protected function findSignal(int $op)

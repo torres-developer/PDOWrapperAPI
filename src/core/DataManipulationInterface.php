@@ -44,6 +44,8 @@ interface DataManipulationInterface
     /**
      * Retrieve multiple rows from a specified table.
      *
+     * @api
+     *
      * @param string|string[]|\Traversable $columns Columns to select from the table $table.
      *                                              In case this is a string:
      *                                              * maybe you want to select just one column or;
@@ -53,8 +55,6 @@ interface DataManipulationInterface
      *                                              If null $columns must be the table name.
      *
      * @return \PDOStatement {@see https://secure.php.net/manual/en/class.pdostatement.php}
-     *
-     * @api
      */
     public function select(
         string|iterable $columns,
@@ -64,12 +64,12 @@ interface DataManipulationInterface
     /**
      * Create new rows in a table.
      *
+     * @api
+     *
      * @param string             $table Table to create the new rows $rows.
      * @param array|\Traversable $rows  The rows, each one a iterable column => value.
      *
      * @return \PDOStatement {@see https://secure.php.net/manual/en/class.pdostatement.php}
-     *
-     * @api
      */
     public function insert(
         string $table,
@@ -80,6 +80,8 @@ interface DataManipulationInterface
     /**
      * Update rows of a table.
      *
+     * @api
+     *
      * @param string   $table       Table to update the rows.
      * @param iterable $assignments What to update and its new assignment, an iterable column => value.
      * @param iterable $conditions  Some conditions to filter rows to update.
@@ -87,17 +89,17 @@ interface DataManipulationInterface
      *                              For a row to be updated, (column == value) needs to be true for all conditions.
      *
      * @return \PDOStatement {@see https://secure.php.net/manual/en/class.pdostatement.php}
-     *
-     * @api
      */
     public function update(
         string $table,
         iterable $assignments,
         iterable $conditions = []
     ): \PDOStatement;
-    
+
     /**
      * Delete rows of a table
+     *
+     * @api
      *
      * @param string   $table       Table to delete the rows.
      * @param iterable $conditions  Some conditions to filter rows to delete.
@@ -105,8 +107,6 @@ interface DataManipulationInterface
      *                              For a row to be deleted, (column == value) needs to be true for all conditions.
      *
      * @return \PDOStatement {@see https://secure.php.net/manual/en/class.pdostatement.php}
-     *
-     * @api
      */
     public function delete(
         string $table,
