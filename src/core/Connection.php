@@ -229,7 +229,7 @@ abstract class Connection implements ServiceInterface, DataManipulationInterface
                 }
 
                 if (is_string($v)) {
-                    return $this->pdo->quote($v);
+                    return $this->service->getPDO($this)->quote($v);
                 }
 
                 return (string) $v;
